@@ -221,7 +221,7 @@ function checkRule(rule) {
 
   // Check features condition (basic example)
   if (applies && rule.features) {
-      if (rule.features.is_demo_user && false) applies = true; // Replace false with actual check
+      if (rule.features.is_demo_user && ("demo" in cfg && cfg.demo)) applies = true; // Replace false with actual check
       else if (rule.features.has_custom_resolution && true) applies = true; // Replace true with actual check
       // Add other feature checks here...
       else applies = false; // Feature condition not met

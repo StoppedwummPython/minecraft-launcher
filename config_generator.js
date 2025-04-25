@@ -16,12 +16,27 @@ function getInput(prompt) {
     });
 }
 
+function getBoolInput(prompt) {
+    const rl = createInterface({
+        input: process.stdin,
+        output: process.stdout
+    });
+    return new Promise(resolve => {
+        rl.question(prompt, answer => {
+            rl.close();
+            resolve(answer.toLowerCase() === "y" || answer.toLowerCase() === "yes" || answer.toLowerCase() === "true" || answer.toLowerCase() === "1");
+        });
+    });
+}
+
 const username = await getInput("Enter your username: ");
 const uuidinput = await getInput("Enter your UUID (or just press enter to generate a new one): ");
+const demo = await getBoolInput("Do you want to play in demo mode? (y/n): ");
 const uuid = uuidinput !== "" ? uuidinput : genuuid();
 const config = {
     "auth_player_name": username,
-    "auth_uuid": uuid
+    "auth_uuid": uuid,
+    "demo": demo,
 };
 
 
