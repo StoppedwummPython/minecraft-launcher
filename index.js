@@ -1,4 +1,5 @@
 /* eslint-disable no-console, no-await-in-loop, camelcase */
+// NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import crypto from 'node:crypto';

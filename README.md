@@ -1,4 +1,6 @@
 # SToppeds Minecraft Launcher (don't tell Mojang though)
+## DISCLAIMER
+**NOT AN OFFICIAL MINECRAFT PRODUCT. NOT APPROVED BY OR ASSOCIATED WITH MOJANG OR MICROSOFT**
 This is an minecraft launcher. But as you might see, you do not need to login into your microsoft account at the start. Do you see where this is going?
 
 Basically, Mojang has their Jar files publicly on their servers. Without any authentification. The game itself doesn't even care if the user is valid. It just says: "oh, this seems kinda sus, but welp, I'm gonna lauch anyways"
