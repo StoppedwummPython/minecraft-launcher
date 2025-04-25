@@ -24,3 +24,15 @@ You cannot join Servers that aren't in offline mode (Aternos calls that setting 
 ### WARNINGS
 I do not gurantee linux and macos support
 ### Clone/Download the repo
+```bat
+git clone https://github.com/StoppedwummPython/minecraft-launcher
+cd minecraft-launcher
+```
+### Install packages
+```bat
+npm i
+```
+### Run
+```bat
+node .
+```
