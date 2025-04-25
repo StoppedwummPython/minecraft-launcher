@@ -9,19 +9,27 @@ import fetch from 'node-fetch';
 import AdmZip from 'adm-zip';
 import cliProgress from 'cli-progress';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
 // --- Configuration ---
 // Main target version manifest filename
 const TARGET_VERSION_MANIFEST_FILENAME = 'neoforge-21.1.162.json'; // <--- CHANGE THIS to the modded manifest file
+let cfg
+try {
+    cfg = JSON.parse(await fs.readFile(path.join(__dirname, 'config.json'), 'utf-8'));
+} catch (e) {
+    cfg = {}
+}
 
 // Auth details (replace placeholders)
-const AUTH_PLAYER_NAME = 'Player';
-const AUTH_UUID = '00000000-0000-0000-0000-000000000000';
+const AUTH_PLAYER_NAME = "auth_player_name" in cfg && cfg.auth_player_name !== "" ? cfg.auth_player_name : 'Player'
+
+const AUTH_UUID = "auth_uuid" in cfg && cfg.auth_uuid !== "" ? cfg.auth_uuid : '00000000-0000-0000-0000-000000000000';
 const AUTH_ACCESS_TOKEN = '00000000000000000000000000000000';
 const AUTH_XUID = '0';
 const USER_TYPE = 'msa';
 
 // --- Directories ---
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const MINECRAFT_DIR = path.join(__dirname, '.minecraft');
 const VERSIONS_DIR = path.join(MINECRAFT_DIR, 'versions');
 const LIBRARIES_DIR = path.join(MINECRAFT_DIR, 'libraries');
@@ -635,7 +643,7 @@ async function main() {
         }
     }
 
-    if (String(versionId).startsWith("neoforge-")) {
+    if (String(versionId).startsWith("neoforge-") && !CLIENT_STORAGE.setupNeoForge) {
         // Run subprocess to setup neoforge
         console.log(`Setting up NeoForge...`);
         const setupNeoForgeScript = path.join(__dirname, 'neoinstaller.jar');
