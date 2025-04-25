@@ -32,11 +32,13 @@ function getBoolInput(prompt) {
 const username = await getInput("Enter your username: ");
 const uuidinput = await getInput("Enter your UUID (or just press enter to generate a new one): ");
 const demo = await getBoolInput("Do you want to play in demo mode? (y/n): ");
+const backup = await getBoolInput("Do you want to save a backup after every successful run? (y/n): ");
 const uuid = uuidinput !== "" ? uuidinput : genuuid();
 const config = {
     "auth_player_name": username,
     "auth_uuid": uuid,
     "demo": demo,
+    "backup": backup,
 };
 
 
@@ -44,5 +46,5 @@ console.log("Your UUID is:", uuid);
 console.log("Don't share it with anyone!");
 console.log("We recommend you to save it in a safe place.");
 
-await fs.writeFile("./config.json", JSON.stringify(config));
+await fs.writeFile("./config.json", JSON.stringify(config, null, 4), "utf-8");
 

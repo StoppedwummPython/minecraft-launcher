@@ -3,3 +3,5 @@ node_modules
 .minecraft_backup
 neoinstaller.jar.log
 config.json
+.minecraft_autobackup
+.minecraft_autobackup.zip

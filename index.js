@@ -38,6 +38,7 @@ const ASSET_INDEXES_DIR = path.join(ASSETS_DIR, 'indexes');
 const ASSET_OBJECTS_DIR = path.join(ASSETS_DIR, 'objects');
 const LAUNCHER_PROFILES_PATH = path.join(MINECRAFT_DIR, 'launcher_profiles.json');
 const CLIENT_STORAGE_PATH = path.join(MINECRAFT_DIR, 'client_storage.json');
+const BACKUP_PATH = path.join(__dirname, '.minecraft_autobackup'); // Backup path (if needed)
 let CLIENT_STORAGE
 
 // --- Helper Functions --- (Mostly unchanged, added error details)
@@ -765,8 +766,36 @@ async function main() {
         }
       });
 
-      mcProcess.on('close', (code) => {
-        console.log(`Minecraft process exited with code ${code}`);
+      mcProcess.on('close', async (code) => {
+        if ("backup" in cfg && cfg.backup) {
+            console.log(`Minecraft process exited with code ${code}, copying backup...`);
+        } else {
+            console.log(`Minecraft process exited with code ${code}.`);
+            return; // No backup needed
+        }
+        try {
+            await fs.cp(MINECRAFT_DIR, BACKUP_PATH, { recursive: true, force: true })
+            console.log(`Backup created at ${BACKUP_PATH}, zipping...`);
+            await new Promise((resolve, reject) => {
+                const zip = new AdmZip();
+                zip.addLocalFolder(BACKUP_PATH);
+                zip.writeZip(BACKUP_PATH + '.zip', (err) => {
+                    if (err) {
+                        console.error(`Failed to create zip backup: ${err}`);
+                        reject(err);
+                    } else {
+                        console.log(`Backup zip created at ${BACKUP_PATH}.zip`);
+                        resolve();
+                    }
+                });
+            })
+            // removing old backup
+            await fs.rmdir(BACKUP_PATH, { recursive: true, force: true });
+
+        } catch (error) {
+            console.error(`Failed to create backup: ${error}`);
+        }
+            
       });
 
 
