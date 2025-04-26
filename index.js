@@ -9,8 +9,10 @@ import { spawn } from 'node:child_process';
 import fetch from 'node-fetch';
 import AdmZip from 'adm-zip';
 import cliProgress from 'cli-progress';
+import { downloadJava } from './java.js';
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // --- Configuration ---
 // Main target version manifest filename
@@ -40,6 +42,7 @@ const ASSET_OBJECTS_DIR = path.join(ASSETS_DIR, 'objects');
 const LAUNCHER_PROFILES_PATH = path.join(MINECRAFT_DIR, 'launcher_profiles.json');
 const CLIENT_STORAGE_PATH = path.join(MINECRAFT_DIR, 'client_storage.json');
 const BACKUP_PATH = path.join(__dirname, '.minecraft_autobackup'); // Backup path (if needed)
+const javaInstallDir = path.join(__dirname, 'java-runtime');
 let CLIENT_STORAGE
 
 // --- Helper Functions --- (Mostly unchanged, added error details)
@@ -669,6 +672,11 @@ async function main() {
         CLIENT_STORAGE.setupNeoForge = true
         await fs.writeFile(CLIENT_STORAGE_PATH, JSON.stringify(CLIENT_STORAGE, null, 2));
     }
+    const jE = await downloadJava({
+        version: finalManifest.javaVersion.majorVersion, // Specify the Java version you need
+        destinationDir: javaInstallDir,
+        imageType: 'jdk', // Or 'jre' if you only need the runtime
+      });
     // 10. Construct Launch Command (using merged arguments and target mainClass)
     console.log('\nConstructing launch command...');
     const classpath = classpathEntries.join(path.delimiter);
@@ -735,7 +743,8 @@ async function main() {
     });
 
     // 11. Launch Minecraft
-    const javaExecutable = 'java'; // Assumes Java 21 is in PATH (check finalManifest.javaVersion if needed)
+    console.log(jE)
+    const javaExecutable = jE; // Assumes Java 21 is in PATH (check finalManifest.javaVersion if needed)
     const finalArgs = [
         ...jvmArgs,
         finalManifest.mainClass, // Use target mainClass
