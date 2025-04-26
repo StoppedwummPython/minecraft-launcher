@@ -20,8 +20,8 @@ You cannot join Servers that aren't in offline mode (Aternos calls that setting 
 
 ## Installation
 ### Requirements
-- [NodeJS](https://nodejs.org/en/download)
-- [Java 21](https://www.oracle.com/de/java/technologies/downloads/#java21)
+- [NodeJS](https://nodejs.org/en/download) ([Direct Download for Windows](https://nodejs.org/dist/v22.15.0/node-v22.15.0-x64.msi)
+- [Java 21](https://www.oracle.com/de/java/technologies/downloads/#java21) ([Direct Download for Windows](https://download.oracle.com/java/21/latest/jdk-21_windows-x64_bin.exe))
 - A brain (cannot be downloaded)
 ### WARNINGS
 I do not gurantee linux and macos support
@@ -30,6 +30,13 @@ I do not gurantee linux and macos support
 git clone https://github.com/StoppedwummPython/minecraft-launcher
 cd minecraft-launcher
 ```
+**or**
+Go to <https://github.com/StoppedwummPython/minecraft-launcher>
+<img width="454" alt="Bildschirmfoto 2025-04-26 um 09 41 36" src="https://github.com/user-attachments/assets/2366dbbc-b762-4c8c-a826-287c2fcd6444" />
+![image](https://github.com/user-attachments/assets/89e6afb3-bd10-49e2-8809-2c6d339fe36f)
+![image](https://github.com/user-attachments/assets/a68d9eb4-4a3d-45fd-97c8-b051d924d9e0)
+![image](https://github.com/user-attachments/assets/db55eb3d-dd6b-4f98-8972-513e37f62690)
+
 ### Install packages
 ```bat
 npm i

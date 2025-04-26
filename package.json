@@ -14,6 +14,7 @@
     "cli-progress": "^3.12.0",
     "node-fetch": "^3.3.2",
     "platform-folders": "^0.6.0",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "windows-shortcuts": "^0.1.6"
   }
 }
