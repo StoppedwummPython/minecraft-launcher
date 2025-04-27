@@ -5,7 +5,7 @@ import fs from 'node:fs/promises';
 import crypto from 'node:crypto';
 import axios from 'axios';
 import AdmZip from 'adm-zip';
-import * as tar from 'tar'; // Corrected import
+import * as tar from 'tar'; // Correct import
 
 // --- Configuration ---
 const ADOPTIUM_API_BASE = 'https://api.adoptium.net/v3';
@@ -46,75 +46,73 @@ function getApiOsArch() {
 }
 
 /**
- * Finds the path to the Java executable within the extracted directory.
+ * Finds the path to the Java executable within the specified directory.
+ * Assumes the archive contents (after potential stripping) are directly in extractDir.
  * Checks standard locations based on OS.
- * @param {string} extractDir - The directory where Java is expected to be.
+ * @param {string} extractDir - The directory where Java files (bin/Contents) are expected.
  * @param {string} platform - The OS platform ('win32', 'darwin', 'linux').
  * @returns {Promise<string|null>} Absolute path to the java executable or null if not found/accessible.
  */
 async function findJavaExecutable(extractDir, platform) {
-  // First, check if the target directory exists at all
+  // console.debug(`Searching for Java executable in ${extractDir} for platform ${platform}`); // Optional debug
   try {
-    await fs.access(extractDir, fs.constants.F_OK);
-  } catch (dirError) {
-    // If the directory doesn't exist, we definitely can't find the executable
-    // console.debug(`Directory ${extractDir} does not exist.`); // Optional debug log
-    return null;
-  }
-
-  try {
-    const entries = await fs.readdir(extractDir, { withFileTypes: true });
-    // Find the *first* directory inside extractDir (e.g., 'jdk-17.0.8+7')
-    const javaBaseDirEntry = entries.find(entry => entry.isDirectory());
-
-    if (!javaBaseDirEntry) {
-      // It's also possible Java was extracted directly into extractDir without a top-level folder
-      // Let's check for bin/java directly in extractDir as a fallback
-      console.debug(`No top-level directory found in ${extractDir}. Checking root...`);
-      javaBaseDirEntry = { name: '.' }; // Represent the extractDir itself
-      // If even this fails, we proceed to construct path based on '.' which might still work if bin exists directly
+    // Ensure the base directory exists before trying to access sub-paths
+    // Use stat to check if it's actually a directory, access just checks existence
+    const stats = await fs.stat(extractDir);
+    if (!stats.isDirectory()) {
+      // console.debug(`Provided path ${extractDir} is not a directory.`); // Optional debug
+      return null;
     }
 
-    const javaBaseDirPath = path.resolve(extractDir, javaBaseDirEntry.name); // Use resolve for robustness
     let javaExecutablePath;
 
+    // Construct the expected path based on OS, assuming strip:1 was used for tarballs
     if (platform === 'win32') {
-      javaExecutablePath = path.join(javaBaseDirPath, 'bin', 'java.exe');
-    } else if (platform === 'darwin') {
-      // Check both potential structures: direct bin and Contents/Home/bin
-      const path1 = path.join(javaBaseDirPath, 'bin', 'java');
-      const path2 = path.join(javaBaseDirPath, 'Contents', 'Home', 'bin', 'java');
+      // On Windows (zip), adm-zip extracts contents directly if archive has top-level dir.
+      // Or structure might be directly bin/java.exe if archive didn't have top-level dir.
+      // Let's check both the base dir and the first subdirectory found.
+      const directPath = path.join(extractDir, 'bin', 'java.exe');
       try {
-        await fs.access(path2, fs.constants.X_OK);
-        javaExecutablePath = path2;
+        await fs.access(directPath, fs.constants.X_OK);
+        javaExecutablePath = directPath;
       } catch {
-        // If path2 fails, try path1
-         try {
-             await fs.access(path1, fs.constants.X_OK);
-             javaExecutablePath = path1;
-         } catch {
-            javaExecutablePath = null; // Neither found/accessible
-         }
+        // Try finding the first subdirectory (like jdk-...) and look inside it
+        const entries = await fs.readdir(extractDir, { withFileTypes: true });
+        const firstDir = entries.find(e => e.isDirectory());
+        if (firstDir) {
+          const subDirPath = path.join(extractDir, firstDir.name, 'bin', 'java.exe');
+          try {
+             await fs.access(subDirPath, fs.constants.X_OK);
+             javaExecutablePath = subDirPath;
+          } catch { /* Subdir path failed */ }
+        }
       }
+
+    } else if (platform === 'darwin') {
+      // After tar strip:1, expect Contents/Home/bin/java directly in extractDir
+      javaExecutablePath = path.join(extractDir, 'Contents', 'Home', 'bin', 'java');
     } else { // Linux
-      javaExecutablePath = path.join(javaBaseDirPath, 'bin', 'java');
+      // After tar strip:1, expect bin/java directly in extractDir
+      javaExecutablePath = path.join(extractDir, 'bin', 'java');
     }
 
     if (!javaExecutablePath) {
-        console.error(`Could not construct a potential Java executable path within ${extractDir}.`);
-        return null;
+        // console.debug(`Could not construct a likely path for java executable in ${extractDir}`); // Optional debug
+        return null; // Failed to determine a potential path
     }
 
-    // Verify the executable exists and is executable
+    // console.debug(`Checking for executable at: ${javaExecutablePath}`); // Optional debug
+    // Verify the final constructed path exists and is executable
     await fs.access(javaExecutablePath, fs.constants.X_OK);
-    // console.debug(`Found executable java at: ${javaExecutablePath}`); // Optional debug
-    return javaExecutablePath;
+    // console.debug(`Executable found and accessible: ${javaExecutablePath}`); // Optional debug
+    return javaExecutablePath; // Return the confirmed path
 
   } catch (error) {
-    // Log errors related to reading dir or accessing the final executable path
-    // This often means the directory exists but is incomplete or permissions are wrong.
-    // console.debug(`Error finding/accessing Java executable in ${extractDir}:`, error.message); // Optional debug
-    return null; // Indicate failure to find a working executable
+    // This catches errors from fs.stat, fs.readdir, or the final fs.access check
+    // It means either the directory doesn't exist, isn't readable, or the executable
+    // is missing/not executable at the expected location.
+    // console.debug(`Failed to find or access Java executable in ${extractDir}. Error: ${error.message}`); // Optional debug
+    return null; // Indicate failure
   }
 }
 
@@ -147,30 +145,22 @@ export async function downloadJava({
   const { os: apiOs, arch: apiArch } = platformInfo;
   const currentPlatform = os.platform();
 
-  // --- Check if Java executable already exists in the destination directory ---
-  // Note: This assumes that if an executable exists in destinationDir, it's the correct version/type.
-  // For managing multiple distinct versions, use different destinationDir paths.
+  // --- Check if Java executable already exists ---
   console.log(`Checking for existing Java executable in: ${destinationDir}`);
   try {
       const existingJavaPath = await findJavaExecutable(destinationDir, currentPlatform);
       if (existingJavaPath) {
-          console.log(`Valid Java executable already found at: ${existingJavaPath}. Skipping download and extraction.`);
-          // You could optionally add a check here like running `java -version`
-          // to be absolutely sure it matches the requested 'version', but that adds complexity.
-          return existingJavaPath; // Return the path to the existing executable
+          console.log(`Valid Java executable already found at: ${existingJavaPath}. Skipping download.`);
+          return existingJavaPath;
       } else {
            console.log(`Existing Java executable not found or installation is incomplete in ${destinationDir}.`);
       }
   } catch (checkError) {
-      // This catch is primarily for unexpected errors during the check itself,
-      // not for the case where the executable is simply not found (handled by existingJavaPath being null).
       console.warn(`Error during pre-check for existing Java: ${checkError.message}. Assuming download is needed.`);
   }
   // --- End Check ---
 
-  // If we reach here, Java wasn't found or the check failed, so proceed with download.
   console.log('Proceeding with Java download and extraction process...');
-
   const apiUrl = `${ADOPTIUM_API_BASE}/binary/latest/${version}/ga/${apiOs}/${apiArch}/${imageType}/${jvmImpl}/normal/${vendor}`;
   console.log(`Attempting to download Java ${version} (${imageType}) for ${apiOs}-${apiArch} from Adoptium API.`);
 
@@ -184,62 +174,60 @@ export async function downloadJava({
 
     if (downloadUrl.endsWith('.zip')) archiveType = 'zip';
     else if (downloadUrl.endsWith('.tar.gz')) archiveType = 'tar.gz';
-    else archiveType = (apiOs === 'windows') ? 'zip' : 'tar.gz'; // Fallback
+    else archiveType = (apiOs === 'windows') ? 'zip' : 'tar.gz';
 
     console.log(`Resolved download URL: ${downloadUrl}`);
     console.log(`Detected archive type: ${archiveType}`);
 
-    // Ensure destination directory exists (might be created here if it didn't exist for the check)
     await fs.mkdir(destinationDir, { recursive: true });
     console.log(`Ensured destination directory exists: ${destinationDir}`);
 
-    // Download
     console.log('Starting download...');
     const response = await axios.get(downloadUrl, { responseType: 'arraybuffer' });
     console.log('Download complete.');
 
-    // Extract
     console.log(`Extracting ${archiveType} archive to ${destinationDir}...`);
     if (archiveType === 'zip') {
       const zip = new AdmZip(response.data);
+      // AdmZip behavior with top-level dirs can vary; findJavaExecutable tries to handle both cases
       zip.extractAllTo(destinationDir, /*overwrite*/ true);
     } else { // tar.gz
       const tempFileName = `java-dl-${crypto.randomBytes(4).toString('hex')}.tar.gz`;
-      const tempFilePath = path.join(os.tmpdir(), tempFileName); // Use system temp dir for archive
+      const tempFilePath = path.join(os.tmpdir(), tempFileName);
       try {
         await fs.writeFile(tempFilePath, response.data);
         console.log(`Temporary archive saved to: ${tempFilePath}`);
         await tar.x({
           file: tempFilePath,
           cwd: destinationDir,
-          strip: 1, // Stripping 1 component is common for Adoptium archives
+          strip: 1, // Crucial for consistent structure after extraction
         });
         console.log('Extraction using tar complete.');
-        await fs.unlink(tempFilePath); // Clean up temp file immediately
+        await fs.unlink(tempFilePath);
         console.log(`Temporary file ${tempFilePath} deleted.`);
       } catch (tarError) {
           console.error(`Error during tar extraction or cleanup:`, tarError);
-          try { await fs.unlink(tempFilePath); } catch { /* ignore cleanup error */ }
-          throw tarError; // Re-throw
+          try { await fs.unlink(tempFilePath); } catch { /* ignore */ }
+          throw tarError;
       }
     }
     console.log('Extraction complete.');
 
-    // Find the newly extracted java executable
-    // Use findJavaExecutable again to get the *exact* path after extraction
+    // Find the newly extracted java executable using the revised logic
     const javaPath = await findJavaExecutable(destinationDir, currentPlatform);
 
     if (javaPath) {
       console.log(`Java executable successfully installed at: ${javaPath}`);
       return javaPath;
     } else {
-      // This case might happen if extraction succeeded but the structure was unexpected
-      console.error('Extraction seemed successful, but failed to find Java executable afterwards.');
-      console.error(`Please check the contents of ${destinationDir}`);
+      // This is now the primary failure point if the structure isn't exactly as expected post-extraction
+      console.error('Extraction seemed successful, but failed to find Java executable at the expected location afterwards.');
+      console.error(`Please double-check the contents of ${destinationDir} and the logic in findJavaExecutable for platform ${currentPlatform}.`);
       return null;
     }
 
   } catch (error) {
+    // ... (rest of the error handling remains the same) ...
     if (axios.isAxiosError(error)) {
       console.error(`Error downloading Java: ${error.message}`);
       if (error.response) {
@@ -253,8 +241,6 @@ export async function downloadJava({
     } else {
       console.error(`An unexpected error occurred during download/extraction:`, error);
     }
-    // Don't automatically clean up destinationDir here, as it might contain useful partial data for debugging
-    // Or it might have contained unrelated files if the user provided an existing directory.
     console.error(`Java download/extraction failed. Directory ${destinationDir} may be incomplete.`);
     return null;
   }
