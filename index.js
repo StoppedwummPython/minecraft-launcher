@@ -10,13 +10,22 @@ import fetch from 'node-fetch';
 import AdmZip from 'adm-zip';
 import cliProgress from 'cli-progress';
 import { downloadJava } from './java.js';
-
+import launcherConfig from "./launcher_config.json" with { type: 'json' };
+import { replaceText } from './replacer.js';
+let defaultVersion = 'neoforge-21.1.162.json'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+let patchedLauncherConfig = {};
+for (const [key, value] of Object.entries(launcherConfig)) {
+    patchedLauncherConfig[key] = await replaceText(value, {
+        ':thisdir:': __dirname
+    })
+}
+console.log(`Launcher config: ${JSON.stringify(patchedLauncherConfig, null, 2)}`);
 
 // --- Configuration ---
 // Main target version manifest filename
-const TARGET_VERSION_MANIFEST_FILENAME = 'neoforge-21.1.162.json'; // <--- CHANGE THIS to the modded manifest file
+const TARGET_VERSION_MANIFEST_FILENAME = launcherConfig.version || 'neoforge-21.1.162.json'; // <--- CHANGE THIS to the modded manifest file
 let cfg
 try {
     cfg = JSON.parse(await fs.readFile(path.join(__dirname, 'config.json'), 'utf-8'));
@@ -33,7 +42,7 @@ const AUTH_XUID = '0';
 const USER_TYPE = 'msa';
 
 // --- Directories ---
-const MINECRAFT_DIR = path.join(__dirname, '.minecraft');
+const MINECRAFT_DIR = path.join(patchedLauncherConfig.basepath, patchedLauncherConfig.path);
 const VERSIONS_DIR = path.join(MINECRAFT_DIR, 'versions');
 const LIBRARIES_DIR = path.join(MINECRAFT_DIR, 'libraries');
 const ASSETS_DIR = path.join(MINECRAFT_DIR, 'assets');
@@ -619,6 +628,11 @@ async function main() {
     }
     assetProgressBar.stop();
     console.log(`Asset check complete.`);
+    const jE = await downloadJava({
+        version: finalManifest.javaVersion.majorVersion, // Specify the Java version you need
+        destinationDir: javaInstallDir,
+        imageType: 'jdk', // Or 'jre' if you only need the runtime
+      });
 
     console.log("Loading client storage...");
     let storageExist
@@ -652,7 +666,7 @@ async function main() {
         // Run subprocess to setup neoforge
         console.log(`Setting up NeoForge...`);
         const setupNeoForgeScript = path.join(__dirname, 'neoinstaller.jar');
-        const setupNeoForgeCommand = `java -jar ${setupNeoForgeScript} --install-client .minecraft`;
+        const setupNeoForgeCommand = `${jE} -jar ${setupNeoForgeScript} --install-client .minecraft`;
         const setupNeoForgeProcess = spawn(setupNeoForgeCommand, { shell: true });
         setupNeoForgeProcess.stdout.on('data', (data) => {
             console.log(data.toString());
@@ -672,11 +686,6 @@ async function main() {
         CLIENT_STORAGE.setupNeoForge = true
         await fs.writeFile(CLIENT_STORAGE_PATH, JSON.stringify(CLIENT_STORAGE, null, 2));
     }
-    const jE = await downloadJava({
-        version: finalManifest.javaVersion.majorVersion, // Specify the Java version you need
-        destinationDir: javaInstallDir,
-        imageType: 'jdk', // Or 'jre' if you only need the runtime
-      });
     // 10. Construct Launch Command (using merged arguments and target mainClass)
     console.log('\nConstructing launch command...');
     const classpath = classpathEntries.join(path.delimiter);
