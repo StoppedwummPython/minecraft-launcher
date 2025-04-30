@@ -25,7 +25,7 @@ console.log(`Launcher config: ${JSON.stringify(patchedLauncherConfig, null, 2)}`
 
 // --- Configuration ---
 // Main target version manifest filename
-const TARGET_VERSION_MANIFEST_FILENAME = launcherConfig.version || 'neoforge-21.1.162.json'; // <--- CHANGE THIS to the modded manifest file
+const TARGET_VERSION_MANIFEST_FILENAME = launcherConfig.version || defaultVersion; // <--- CHANGE THIS to the modded manifest file
 let cfg
 try {
     cfg = JSON.parse(await fs.readFile(path.join(__dirname, 'config.json'), 'utf-8'));
