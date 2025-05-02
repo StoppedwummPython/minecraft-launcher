@@ -323,8 +323,6 @@ async function ensureLauncherProfiles(currentVersionId) {
     }
 }
 
-// --- ClientStorage Loading ---
-
 
 // --- Manifest Loading and Merging ---
 
@@ -662,7 +660,12 @@ async function main() {
         }
     }
 
-    if (String(versionId).startsWith("neoforge-") && !CLIENT_STORAGE.setupNeoForge) {
+    if (typeof(CLIENT_STORAGE.setupNeoForge==="boolean")) {
+        // Migrate from boolean to array
+        CLIENT_STORAGE.setupNeoForge = []
+    }
+
+    if (String(versionId).startsWith("neoforge-") && !CLIENT_STORAGE.setupNeoForge.includes(versionId)) {
         // Run subprocess to setup neoforge
         console.log(`Setting up NeoForge...`);
         const setupNeoForgeScript = path.join(__dirname, 'neoinstaller.jar');
@@ -683,7 +686,7 @@ async function main() {
                 }
             });
         });
-        CLIENT_STORAGE.setupNeoForge = true
+        CLIENT_STORAGE.setupNeoForge.push(versionId);
         await fs.writeFile(CLIENT_STORAGE_PATH, JSON.stringify(CLIENT_STORAGE, null, 2));
     }
     // 10. Construct Launch Command (using merged arguments and target mainClass)
