@@ -20,6 +20,6 @@
     "windows-shortcuts": "^0.1.6"
   },
   "devDependencies": {
-    "electron": "^25.0.0"
+    "electron": "^36.1.0"
   }
 }

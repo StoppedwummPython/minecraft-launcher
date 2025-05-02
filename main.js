@@ -1,8 +1,9 @@
-import { app, BrowserWindow } from 'electron';
+import electron from 'electron';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const __filename = fileURLToPath(import.meta.url);
+const { app, BrowserWindow } = electron;
 const __dirname = path.dirname(__filename);
 
 let mainWindow;
@@ -19,6 +20,7 @@ const createWindow = () => {
   mainWindow.loadFile('index.html');
 };
 
+console.log(app)
 app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
