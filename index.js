@@ -660,7 +660,7 @@ async function main() {
         }
     }
 
-    if (typeof(CLIENT_STORAGE.setupNeoForge==="boolean")) {
+    if (typeof CLIENT_STORAGE.setupNeoForge === 'boolean') {
         // Migrate from boolean to array
         CLIENT_STORAGE.setupNeoForge = []
     }
