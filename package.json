@@ -5,8 +5,9 @@
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
+    "start": "electron .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
@@ -17,5 +18,8 @@
     "tar": "^7.4.3",
     "uuid": "^11.1.0",
     "windows-shortcuts": "^0.1.6"
+  },
+  "devDependencies": {
+    "electron": "^25.0.0"
   }
 }
