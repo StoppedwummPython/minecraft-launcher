@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Launcher</title>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <header>
+        <h1>MC Launcher</h1>
+    </header>
+    <main>
+        <button id="execute-button">Run Minecraft</button>
+        <a href="moddashboard/index.html">Mod Dashboard</a>
+    </main>
+    <script>
+        document.getElementById('execute-button').addEventListener('click', function() {
+            mcAPI.launch()
+        });
+    </script>
+</html>
