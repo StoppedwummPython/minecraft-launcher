@@ -42,7 +42,8 @@ Go to <https://github.com/StoppedwummPython/minecraft-launcher>
 ![image](https://www.wikihow.com/images/thumb/8/80/Change-Directories-in-Command-Prompt-Step-5-Version-3.jpg/v4-728px-Change-Directories-in-Command-Prompt-Step-5-Version-3.jpg.webp)
 ![image](https://www.wikihow.com/images/thumb/5/56/Change-Directories-in-Command-Prompt-Step-6-Version-3.jpg/v4-728px-Change-Directories-in-Command-Prompt-Step-6-Version-3.jpg.webp)
 ![image](https://www.wikihow.com/images/thumb/0/08/Change-Directories-in-Command-Prompt-Step-7-Version-2.jpg/v4-728px-Change-Directories-in-Command-Prompt-Step-7-Version-2.jpg.webp)
-Press enter
+
+**Press enter, then put in the following commands (also press enter after each command)**
 
 ### Install packages
 ```bat
