@@ -57,8 +57,10 @@ describe("Can handle manifest", () => {
 describe("Misc functions", () => {
     it("Should be defined", async () => {
         expect(index.downloadFile).toBeDefined()
+    })
+    it("Should download file", async () => {
         await fs.rm("test.txt", { force: true })
-        const download = await index.downloadFile("https://example.com", "test.txt")
+        const download = await index.downloadFile("https://sample-files.com/downloads/documents/txt/simple.txt", "test.txt")
         expect(download).toBeDefined()
         expect(download).toBeTypeOf("boolean")
         expect(download).eq(true)
