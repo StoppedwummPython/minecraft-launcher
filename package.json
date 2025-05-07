@@ -11,14 +11,12 @@
     "test": "node ."
   },
   "dependencies": {
-    "@xterm/xterm": "^5.5.0",
     "adm-zip": "^0.5.16",
     "axios": "^1.9.0",
     "cli-progress": "^3.12.0",
     "node-fetch": "^3.3.2",
     "tar": "^7.4.3",
-    "uuid": "^11.1.0",
-    "windows-shortcuts": "^0.1.6"
+    "uuid": "^11.1.0"
   },
   "devDependencies": {
     "electron": "^36.1.0",
