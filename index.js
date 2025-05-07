@@ -823,8 +823,24 @@ async function main() {
 
 } // End of main function
 
-main().catch(error => {
-    console.error("\n--- An error occurred during setup or launch ---");
-    console.error(error);
-    process.exit(1);
-});
+const entryPointScript = process.argv[1].split(path.sep).pop();
+if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop()) {
+    main().catch(error => {
+        console.error("\n--- An error occurred during setup or launch ---");
+        console.error(error);
+        process.exit(1);
+    });
+}
+
+export default {
+    downloadFile,
+    extractNatives,
+    getOSName,
+    getArchName,
+    checkRule,
+    checkItemRules,
+    ensureLauncherProfiles,
+    loadManifest,
+    mergeManifests,
+    main
+}

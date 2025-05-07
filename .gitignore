@@ -10,3 +10,4 @@ java-runtime
 dist
 build
 __pycache__
+test.txt
