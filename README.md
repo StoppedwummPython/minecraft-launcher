@@ -50,5 +50,5 @@ npm i
 ```
 ### Run
 ```bat
-node .
+npm start
 ```
