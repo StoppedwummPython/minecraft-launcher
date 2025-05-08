@@ -7,3 +7,5 @@ config.json
 .minecraft_autobackup.zip
 java-runtime
 .DS_Store
+dist
+build

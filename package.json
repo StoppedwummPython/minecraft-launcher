@@ -7,9 +7,11 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "start": "node .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
+    "@xterm/xterm": "^5.5.0",
     "adm-zip": "^0.5.16",
     "axios": "^1.9.0",
     "cli-progress": "^3.12.0",
@@ -17,5 +19,9 @@
     "tar": "^7.4.3",
     "uuid": "^11.1.0",
     "windows-shortcuts": "^0.1.6"
+  },
+  "devDependencies": {
+    "electron": "^36.1.0",
+    "electron-builder": "^26.0.12"
   }
 }

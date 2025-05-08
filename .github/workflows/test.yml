@@ -1,0 +1,19 @@
+name: Test with ViTest
+on:
+  push:
+    branches: [gui-preview]
+  pull_request:
+    branches: [gui-preview]
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npx vitest --run --coverage
+        env:
+          CI: true
