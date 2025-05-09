@@ -822,9 +822,9 @@ async function main() {
 
 
 } // End of main function
-
+// --ui adds fix to the launcher (when the ui launches, it returns ui_index.cjs as the entry point script, which will trigger module logic, which is now fixed)
 const entryPointScript = process.argv[1].split(path.sep).pop();
-if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop()) {
+if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop() || (process.argv.length == 3 && process.argv[2] == "--ui")) {
     main().catch(error => {
         console.error("\n--- An error occurred during setup or launch ---");
         console.error(error);

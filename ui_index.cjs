@@ -32,7 +32,7 @@ const createConsole = () => {
 app.whenReady().then(() => {
     ipcMain.on('launch', (event, arg) => {
         let consoleWin = createConsole();
-        const process = spawn('node', [mainIndex]);
+        const process = spawn('node', [mainIndex, "--ui"]);
         
         process.stdout.on('data', (data) => {
             consoleWin.webContents.send('msg', String(data)); // Send to renderer
