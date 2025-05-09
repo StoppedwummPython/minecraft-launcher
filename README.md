@@ -23,7 +23,7 @@ You cannot join Servers that aren't in offline mode (Aternos calls that setting 
 - [NodeJS](https://nodejs.org/en/download) ([Direct Download for Windows](https://nodejs.org/dist/v22.15.0/node-v22.15.0-x64.msi)
 - A brain (cannot be downloaded)
 ### WARNINGS
-I do not gurantee linux and macos support
+Linux support is not guranteed (it works on MacOS and Windows)
 ### Clone/Download the repo
 ```bat
 git clone https://github.com/StoppedwummPython/minecraft-launcher
