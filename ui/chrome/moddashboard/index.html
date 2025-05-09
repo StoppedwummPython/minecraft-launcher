@@ -11,18 +11,13 @@
         <h1>Mod Dashboard</h1>
     </header>
     <main>
-        <section id="mod-list">
-            <h2>Installed Mods</h2>
-            <ul id="mod-list-items">
-                <!-- Mod items will be dynamically inserted here -->
-            </ul>
-        </section>
-        <section id="mod-details">
-            <h2>Mod Details</h2>
-            <div id="mod-info">
-                <!-- Mod details will be dynamically inserted here -->
-            </div>
-        </section>
+        <div>
+            <input type="text" id="searchText" placeholder="Search for mods...">
+            <button id="search">Search</button>
+        </div>
+        <div id="result">
+            
+        </div>
     </main>
     <script src="../js/moddashboard.js" defer type="module"></script>
 </html>
