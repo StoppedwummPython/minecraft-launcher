@@ -32,16 +32,23 @@
 
     <script type="module">
         const jsonEditor = document.getElementById('json-editor');
-        console.log(typeof mcAPI.getConfig('launcher'))
-        const jsonData = await mcAPI.getConfig('launcher') || {};
-        console.log(jsonData)
+        const jsonData = await mcAPI.getConfig('client') || {};
 
         window.addEntry = function(key = '', value = '') {
             const entryDiv = document.createElement('div');
             entryDiv.className = 'json-entry';
+
+            const inputType = typeof value === 'boolean' ? 'checkbox'
+                            : typeof value === 'number' ? 'number'
+                            : 'text';
+
+            const isCheckbox = inputType === 'checkbox';
+            const valueAttr = isCheckbox ? '' : `value="${value}"`;
+            const checkedAttr = isCheckbox && value ? 'checked' : '';
+
             entryDiv.innerHTML = `
                 <input type="text" placeholder="Key" value="${key}" oninput="updateJson(this, 'key')">
-                <input type="text" placeholder="Value" value="${value}" oninput="updateJson(this, 'value')">
+                <input type="${inputType}" ${valueAttr} ${checkedAttr} oninput="updateJson(this, 'value')">
                 <button onclick="removeEntry(this)">Remove</button>
             `;
             jsonEditor.appendChild(entryDiv);
@@ -51,15 +58,27 @@
             const entryDiv = input.parentElement;
             const keyInput = entryDiv.children[0];
             const valueInput = entryDiv.children[1];
+
+            const oldKey = keyInput.dataset.oldKey || keyInput.value;
             const key = keyInput.value;
-            const value = valueInput.value;
 
             if (type === 'key') {
-                delete jsonData[keyInput.dataset.oldKey];
+                if (oldKey && oldKey !== key) {
+                    delete jsonData[oldKey];
+                }
                 keyInput.dataset.oldKey = key;
             }
 
             if (key) {
+                let value;
+                if (valueInput.type === 'checkbox') {
+                    value = valueInput.checked;
+                } else if (valueInput.type === 'number') {
+                    value = parseFloat(valueInput.value);
+                } else {
+                    value = valueInput.value;
+                }
+
                 jsonData[key] = value;
             }
         }
@@ -74,7 +93,7 @@
         window.saveJson = function saveJson() {
             const jsonString = JSON.stringify(jsonData, null, 4);
             console.log(jsonString);
-            mcAPI.saveConfig('launcher', jsonString)
+            mcAPI.saveConfig('client', jsonString)
                 .then(() => {
                     alert('JSON saved successfully!');
                 })
@@ -91,4 +110,3 @@
     </script>
 </body>
 </html>
-
