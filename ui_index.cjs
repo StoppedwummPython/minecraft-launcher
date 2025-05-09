@@ -189,6 +189,21 @@ app.whenReady().then(() => {
     fs.rmSync(path, { force: true });
   });
 
+  ipcMain.handle('getConfig', async (event, clientOrLauncher) => {
+    const configPath = path.join(__dirname, `${clientOrLauncher == "client" ? "config" : "launcher_config"}.json`);
+    if (!fs.existsSync(configPath)) {
+      throw new Error(`Config file not found: ${configPath}`);
+    }
+    const configData = fs.readFileSync(configPath);
+    console.log(`Config data: ${configData}`);
+    return JSON.parse(configData);
+  });
+
+  ipcMain.handle('saveConfig', async (event, clientOrLauncher, config) => {
+    const configPath = path.join(__dirname, `${clientOrLauncher == "client" ? "config" : "launcher_config"}.json`);
+    fs.writeFileSync(configPath, config);
+  });
+
   // Open main window
   createWindow();
 });

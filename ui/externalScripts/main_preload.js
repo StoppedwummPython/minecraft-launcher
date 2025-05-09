@@ -13,4 +13,17 @@ contextBridge.exposeInMainWorld('mcAPI', {
     deleteFromModsFolder: (path) => {
         ipcRenderer.send('deleteFromModsFolder', path);
     },
+    /**
+     * Retrieves the configuration for the client or launcher.
+     * 
+     * @param {"client" || "launcher"} clientOrLauncher - 'client' or 'launcher'
+     * @returns {Promise<Object>} - The configuration object
+     */
+    getConfig: async (clientOrLauncher) => {
+        return await ipcRenderer.invoke('getConfig', clientOrLauncher);
+    },
+
+    saveConfig: async (clientOrLauncher, config) => {
+        return await ipcRenderer.invoke('saveConfig', clientOrLauncher, config);
+    }
 })

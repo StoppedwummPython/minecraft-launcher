@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Visual Editor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .json-editor {
+            margin-top: 20px;
+        }
+        .json-entry {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .json-entry input {
+            margin-left: 10px;
+            padding: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>JSON Visual Editor</h1>
+    <div id="json-editor" class="json-editor"></div>
+    <button onclick="addEntry()">Add Entry</button>
+    <button onclick="saveJson()">Save JSON</button>
+
+    <script type="module">
+        const jsonEditor = document.getElementById('json-editor');
+        console.log(typeof mcAPI.getConfig('launcher'))
+        const jsonData = await mcAPI.getConfig('launcher') || {};
+        console.log(jsonData)
+
+        window.addEntry = function(key = '', value = '') {
+            const entryDiv = document.createElement('div');
+            entryDiv.className = 'json-entry';
+            entryDiv.innerHTML = `
+                <input type="text" placeholder="Key" value="${key}" oninput="updateJson(this, 'key')">
+                <input type="text" placeholder="Value" value="${value}" oninput="updateJson(this, 'value')">
+                <button onclick="removeEntry(this)">Remove</button>
+            `;
+            jsonEditor.appendChild(entryDiv);
+        }
+
+        window.updateJson = function (input, type) {
+            const entryDiv = input.parentElement;
+            const keyInput = entryDiv.children[0];
+            const valueInput = entryDiv.children[1];
+            const key = keyInput.value;
+            const value = valueInput.value;
+
+            if (type === 'key') {
+                delete jsonData[keyInput.dataset.oldKey];
+                keyInput.dataset.oldKey = key;
+            }
+
+            if (key) {
+                jsonData[key] = value;
+            }
+        }
+
+        window.removeEntry = function (button) {
+            const entryDiv = button.parentElement;
+            const keyInput = entryDiv.children[0];
+            delete jsonData[keyInput.value];
+            jsonEditor.removeChild(entryDiv);
+        }
+
+        window.saveJson = function saveJson() {
+            const jsonString = JSON.stringify(jsonData, null, 4);
+            console.log(jsonString);
+            mcAPI.saveConfig('launcher', jsonString)
+                .then(() => {
+                    alert('JSON saved successfully!');
+                })
+                .catch((error) => {
+                    console.error('Error saving JSON:', error);
+                    alert('Failed to save JSON.');
+                });
+        }
+
+        // Populate the editor with existing JSON data
+        for (const [key, value] of Object.entries(jsonData)) {
+            addEntry(key, value);
+        }
+    </script>
+</body>
+</html>
+
