@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mod Dashboard</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <script>
+        async function installMod(modId) {
+            let depsdownloaded = []
+            async function downloadMod(id) {
+                const modrinthUrl = "https://api.modrinth.com/v2/project/" + id + "/version?loaders=[\"neoforge\"]&game_versions=[\"1.21.1\"]"
+                const modrinthResponse = await fetch(modrinthUrl)
+                const modrinthData = await modrinthResponse.json()
+                let latestversion = modrinthData[0]
+                const versionData = await fetch("https://api.modrinth.com/v2/version/" + latestversion.id)
+                const versionJson = await versionData.json()
+                const primaryFile = versionJson.files.find(file => file.primary)
+                const downloadUrl = primaryFile.url
+                window.mcAPI.downloadToModsFolder(downloadUrl)
+                return versionJson
+            }
+            async function loopThroughDependencies(mod) {
+                const dependencies = mod.dependencies
+                for (const dependency of dependencies) {
+                    console.log(dependency)
+                    if (!depsdownloaded.includes(dependency.project_id)) {
+                        depsdownloaded.push(dependency.project_id)
+                        const depMod = await downloadMod(dependency.project_id)
+                        await loopThroughDependencies(depMod)
+                    }
+                }
+            }
+            const mainMod = await downloadMod(modId)
+            loopThroughDependencies(mainMod)
+        }
+    </script>
+</head>
+
+<body>
+    <header>
+        <a href="../index.html">Back</a>
+        <h1>Mod Dashboard</h1>
+    </header>
+    <main>
+        <div>
+            <input type="text" id="searchText" placeholder="Search for mods...">
+            <button id="search">Search</button>
+        </div>
+        <div id="result">
+
+        </div>
+    </main>
+    <script src="../js/moddashboard.js" defer type="module"></script>
+
+</html>

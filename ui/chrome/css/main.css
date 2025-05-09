@@ -1,0 +1,47 @@
+body {
+    background-color: #ffffff;
+    font-family: Arial, sans-serif;
+    color: #333;
+    margin: 0;
+    padding: 20px;
+}
+
+#terminal {
+    width: 100%;
+    height: 300px; /* Adjusted height for better visibility */
+    overflow-y: auto;
+    background-color: #000;
+    color: #fff;
+    font-family: monospace;
+    border: 1px solid #ccc;
+    padding: 10px;
+    box-sizing: border-box;
+    margin-top: 20px; /* Added spacing from other elements */
+}
+
+#terminal pre {
+    margin: 0;
+    padding: 0;
+}
+
+#terminal pre .error {
+    color: red;
+}
+
+.project {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    /** Add an outer border to the project section */
+    border: 1px solid #ccc;
+}
+
+.project h3 {
+    margin-bottom: 10px;
+}
+
+.project p {
+    margin: 0;
+    font-size: 14px;
+}
