@@ -25,3 +25,21 @@ body {
 #terminal pre .error {
     color: red;
 }
+
+.project {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-top: 20px;
+    /** Add an outer border to the project section */
+    border: 1px solid #ccc;
+}
+
+.project h3 {
+    margin-bottom: 10px;
+}
+
+.project p {
+    margin: 0;
+    font-size: 14px;
+}

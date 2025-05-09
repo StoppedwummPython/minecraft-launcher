@@ -1,11 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mod Dashboard</title>
     <link rel="stylesheet" href="../css/main.css">
+    <script>
+        async function installMod(modId) {
+            const modrinthUrl = "https://api.modrinth.com/v2/project/" + modId + "/version?loaders=[\"neoforge\"]&game_versions=[\"1.21.1\"]"
+            const modrinthResponse = await fetch(modrinthUrl)
+            const modrinthData = await modrinthResponse.json()
+            let latestversion = modrinthData[0]
+            const versionData = await fetch("https://api.modrinth.com/v2/version/" + latestversion.id)
+            const versionJson = await versionData.json()
+            console.log(versionJson)
+        }
+    </script>
 </head>
+
 <body>
     <header>
         <h1>Mod Dashboard</h1>
@@ -16,8 +29,9 @@
             <button id="search">Search</button>
         </div>
         <div id="result">
-            
+
         </div>
     </main>
     <script src="../js/moddashboard.js" defer type="module"></script>
+
 </html>
