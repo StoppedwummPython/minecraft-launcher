@@ -18,7 +18,7 @@ document.getElementById("search").addEventListener("click", async function() {
             <p>Downloads: ${project.downloads}</p>
             <p>Follows: ${project.follows}</p>
             <a href="https://modrinth.com/${project.project_type}/${project.slug}" target="_blank">View on Modrinth</a>
-            <button class="install" onclick="installMod('${project.slug}')">Install</button>
+            <button class="install btn btn-primary" onclick="installMod('${project.slug}')" ${mods.find(mod => new String(mod.metadata[0].id).includes(project.slug)) ? "disabled=1" : ""} id="${project.slug}">${mods.find(mod => mod.metadata[0].id == project.slug) ? "Installed" : "Install"}</button>
         `
         resultDiv.appendChild(projectDiv)
     }
@@ -27,6 +27,7 @@ document.getElementById("search").addEventListener("click", async function() {
 const modsDiv = document.getElementById("installedMods")
 for (var i = 0; i < mods.length; i++) {
     let mod = mods[i]
+    console.log(mod)
     let modDiv = document.createElement("div")
     modDiv.className = "mod"
     modDiv.innerHTML = `
@@ -34,7 +35,7 @@ for (var i = 0; i < mods.length; i++) {
         <p>${mod.metadata[0].description}</p>
         <p>Version: ${mod.metadata[0].version}</p>
         <p>Path: ${mod.path}</p>
-        <button class="uninstall" onclick="uninstallMod('${mod.path}')">Uninstall</button>
+        <button class="uninstall btn btn-primary" onclick="uninstallMod('${mod.path}')"} id="${mod.path}">Uninstall</button>
     `
     modsDiv.appendChild(modDiv)
 }

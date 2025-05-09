@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mod Dashboard</title>
     <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
     <script>
         async function installMod(modId) {
             let depsdownloaded = []
@@ -32,12 +33,37 @@
                     }
                 }
             }
+            document.getElementById(modId).innerHTML = ""
+            const spinner = document.createElement("div")
+            spinner.className = "spinner-border text-dark"
+            spinner.role = "status"
+            const span = document.createElement("span")
+            span.className = "visually-hidden"
+            span.innerText = "Loading..."
+            spinner.appendChild(span)
+            document.getElementById(modId).appendChild(spinner)
             const mainMod = await downloadMod(modId)
-            loopThroughDependencies(mainMod)
+            await loopThroughDependencies(mainMod)
+            setTimeout(() => {
+                location.reload()
+            }, 3000)
         }
 
         async function uninstallMod(path) {
+            // add spinner
+            const spinner = document.createElement("div")
+            spinner.className = "spinner-border text-dark"
+            spinner.role = "status"
+            const span = document.createElement("span")
+            span.className = "visually-hidden"
+            span.innerText = "Loading..."
+            spinner.appendChild(span)
+            document.getElementById(path).innerHTML = ""
+            document.getElementById(path).appendChild(spinner)
             window.mcAPI.deleteFromModsFolder(path)
+            setTimeout(() => {
+                location.reload()
+            }, 3000)
         }
     </script>
 </head>
