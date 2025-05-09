@@ -1,3 +1,4 @@
+const mods = await window.mcAPI.getModFiles()
 document.getElementById("search").addEventListener("click", async function() {
     let search = document.getElementById("searchText").value;
     let searchUrl = "https://mc-backend-six.vercel.app/api/search?q=" + encodeURIComponent(search)
@@ -22,3 +23,18 @@ document.getElementById("search").addEventListener("click", async function() {
         resultDiv.appendChild(projectDiv)
     }
 });
+
+const modsDiv = document.getElementById("installedMods")
+for (var i = 0; i < mods.length; i++) {
+    let mod = mods[i]
+    let modDiv = document.createElement("div")
+    modDiv.className = "mod"
+    modDiv.innerHTML = `
+        <h3>${mod.metadata[0].name}</h3>
+        <p>${mod.metadata[0].description}</p>
+        <p>Version: ${mod.metadata[0].version}</p>
+        <p>Path: ${mod.path}</p>
+        <button class="uninstall" onclick="uninstallMod('${mod.path}')">Uninstall</button>
+    `
+    modsDiv.appendChild(modDiv)
+}

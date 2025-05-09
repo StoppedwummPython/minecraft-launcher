@@ -35,6 +35,10 @@
             const mainMod = await downloadMod(modId)
             loopThroughDependencies(mainMod)
         }
+
+        async function uninstallMod(path) {
+            window.mcAPI.deleteFromModsFolder(path)
+        }
     </script>
 </head>
 
@@ -50,6 +54,12 @@
         </div>
         <div id="result">
 
+        </div>
+        <div id="modList">
+            <h2>Installed Mods</h2>
+            <ul id="installedMods">
+                <!-- Installed mods will be listed here -->
+            </ul>
         </div>
     </main>
     <script src="../js/moddashboard.js" defer type="module"></script>

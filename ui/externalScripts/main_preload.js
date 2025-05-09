@@ -7,7 +7,10 @@ contextBridge.exposeInMainWorld('mcAPI', {
     downloadToModsFolder: (url) => {
         ipcRenderer.send('downloadToModsFolder', url);
     },
-    getModFiles: (url) => {
-        ipcRenderer.send('getModFiles', url);
-    }
+    getModFiles: async () => {
+        return await ipcRenderer.invoke('getModsWithMetadata');
+    },
+    deleteFromModsFolder: (path) => {
+        ipcRenderer.send('deleteFromModsFolder', path);
+    },
 })
