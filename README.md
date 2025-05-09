@@ -4,12 +4,12 @@
 This is an minecraft launcher. But as you might see, you do not need to login into your microsoft account at the start. Do you see where this is going?
 
 Basically, Mojang has their Jar files publicly on their servers. Without any authentification. The game itself doesn't even care if the user is valid. It just says: "oh, this seems kinda sus, but welp, I'm gonna lauch anyways"
-You cannot join Servers that aren't in offline mode (Aternos calls that setting "Allow Cracked Clients")
+You cannot join Servers that are in online mode (Aternos calls that setting "Allow Cracked Clients")
 
 **UI Update!**
 
 ## **BUT**
-- This file DOESN'T violate minecrafts Eula
+- This repo DOESN'T violate minecrafts Eula
 - **You are at your own risk**
 - The software DOESN'T ship with any Minecraft Sourcecode
 - This is Java Edition, **not bedrock**

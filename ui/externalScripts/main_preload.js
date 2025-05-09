@@ -6,5 +6,8 @@ contextBridge.exposeInMainWorld('mcAPI', {
     },
     downloadToModsFolder: (url) => {
         ipcRenderer.send('downloadToModsFolder', url);
+    },
+    getModFiles: (url) => {
+        ipcRenderer.send('getModFiles', url);
     }
 })
