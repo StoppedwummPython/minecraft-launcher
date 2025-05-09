@@ -812,7 +812,7 @@ async function main() {
                 });
             })
             // removing old backup
-            await fs.rmdir(BACKUP_PATH, { recursive: true, force: true });
+            await fs.rm(BACKUP_PATH, { recursive: true, force: true });
 
         } catch (error) {
             console.error(`Failed to create backup: ${error}`);
@@ -822,9 +822,25 @@ async function main() {
 
 
 } // End of main function
+// --ui adds fix to the launcher (when the ui launches, it returns ui_index.cjs as the entry point script, which will trigger module logic, which is now fixed)
+const entryPointScript = process.argv[1].split(path.sep).pop();
+if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop() || (process.argv.length == 3 && process.argv[2] == "--ui")) {
+    main().catch(error => {
+        console.error("\n--- An error occurred during setup or launch ---");
+        console.error(error);
+        process.exit(1);
+    });
+}
 
-main().catch(error => {
-    console.error("\n--- An error occurred during setup or launch ---");
-    console.error(error);
-    process.exit(1);
-});
+export default {
+    downloadFile,
+    extractNatives,
+    getOSName,
+    getArchName,
+    checkRule,
+    checkItemRules,
+    ensureLauncherProfiles,
+    loadManifest,
+    mergeManifests,
+    main
+}
