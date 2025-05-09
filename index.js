@@ -812,7 +812,7 @@ async function main() {
                 });
             })
             // removing old backup
-            await fs.rmdir(BACKUP_PATH, { recursive: true, force: true });
+            await fs.rm(BACKUP_PATH, { recursive: true, force: true });
 
         } catch (error) {
             console.error(`Failed to create backup: ${error}`);
