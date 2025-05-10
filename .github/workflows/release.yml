@@ -5,6 +5,70 @@ on:
     types: [published]
 
 jobs:
+  build-win:
+    name: Build Windows Installer
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python (or any required setup)
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'  # Specify the Python version you need
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run build step (example)
+        run: |
+          python setup.py ${{ github.event.release.tag_name }}
+          pyinstaller --onefile installer.py
+          move dist/installer.exe dist/installer-win.exe
+      - name: Upload Asset to Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            dist/installer-win.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  build-mac:
+    name: Build Mac Installer
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python (or any required setup)
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'  # Specify the Python version you need
+          cache: 'pip'
+          cache-dependency-path: requirements.txt
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run build step (example)
+        run: |
+          python setup.py ${{ github.event.release.tag_name }}
+          pyinstaller --onefile installer.py
+          mv dist/installer dist/installer-mac
+      - name: Upload Asset to Release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event.release.tag_name }}
+          files: |
+            dist/installer-mac
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
   append-assets:
     name: Append Assets to Release
     runs-on: ubuntu-latest
@@ -28,12 +92,26 @@ jobs:
         run: |
           python setup.py ${{ github.event.release.tag_name }}
           pyinstaller --onefile installer.py
+          mv dist/installer dist/installer-ubuntu
+      - name: Download Windows Asset
+        uses: actions/download-artifact@v3
+        with:
+          name: installer-win.exe
+          path: dist/
+      - name: Download Mac Asset
+        uses: actions/download-artifact@v3
+        with:
+          name: installer-mac
+          path: dist/
 
       - name: Upload Asset to Release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ github.event.release.tag_name }}
           files: |
-            dist/installer
+            dist/installer-win.exe
+            dist/installer-mac
+            dist/installer-ubuntu
+
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
