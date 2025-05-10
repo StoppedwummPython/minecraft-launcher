@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+
+        input {
+            padding: 10px;
+            margin: 10px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Login</h1>
+    <p>Enter your username and password to login:</p>
+    <form>
+        <input type="text" id="username" placeholder="Username">
+        <input type="password" id="password" placeholder="Password">
+        <button type="submit" onclick="login(event)">Login</button>
+    </form>
+    <script>
+        async function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const data = await fetch('https://backend.kst-vechta.de/api/web/auth/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({
+                    userNameOrMail: username,
+                    password
+                })
+            })
+            const result = await data.json();
+            const cookies = data.headers.getSetCookie();
+            if (data.ok) {
+                console.log('Login successful:', result);
+                console.log('Cookies:', cookies, typeof cookies);
+                alert('Login successful!');
+                // Store the cookies in local storage or a cookie jar
+                localStorage.setItem('cookies', cookies);
+                // Redirect to the main page or perform any other action
+                window.location.href = 'index.html';
+            } else {
+                alert('Login failed: ' + result);
+                console.log(result)
+                console.log(data.statusText)
+            }
+        }
+    </script>
+</body>
+
+</html>
