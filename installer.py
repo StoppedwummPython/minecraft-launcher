@@ -9,7 +9,7 @@ import sys
 
 # === CONFIGURATION ===
 TARGET_DIR = os.path.expanduser("~/Documents/mc")
-TAG = sys.argv[1] if len(sys.argv) > 1 else "1.1.0"
+TAG = "!$!TAG!$!"
 ZIP_URL = "https://github.com/StoppedwummPython/minecraft-launcher/archive/refs/tags/" + TAG + ".zip"
 
 def download_zip(url, dest_path):

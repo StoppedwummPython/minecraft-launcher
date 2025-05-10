@@ -26,7 +26,8 @@ jobs:
 
       - name: Run build step (example)
         run: |
-          pyinstaller --onefile installer.py ${{ github.event.release.tag_name }}
+          python setup.py ${{ github.event.release.tag_name }}
+          pyinstaller --onefile installer.py
 
       - name: Upload Asset to Release
         uses: softprops/action-gh-release@v1
