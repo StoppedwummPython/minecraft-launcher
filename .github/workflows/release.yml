@@ -29,14 +29,11 @@ jobs:
           python setup.py ${{ github.event.release.tag_name }}
           pyinstaller --onefile installer.py
           move dist/installer.exe dist/installer-win.exe
-      - name: Upload Asset to Release
-        uses: softprops/action-gh-release@v3
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          tag_name: ${{ github.event.release.tag_name }}
-          files: |
-            dist/installer-win.exe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: installer-win.exe
+          path: dist/installer-win.exe
   build-mac:
     name: Build Mac Installer
     runs-on: macos-latest
@@ -61,17 +58,15 @@ jobs:
           python setup.py ${{ github.event.release.tag_name }}
           pyinstaller --onefile installer.py
           mv dist/installer dist/installer-mac
-      - name: Upload Asset to Release
-        uses: softprops/action-gh-release@v3
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
         with:
-          tag_name: ${{ github.event.release.tag_name }}
-          files: |
-            dist/installer-mac
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: installer-mac
+          path: dist/installer-mac
   append-assets:
     name: Append Assets to Release
     runs-on: ubuntu-latest
+    needs: [build-win, build-mac]
 
     steps:
       - name: Checkout Code
