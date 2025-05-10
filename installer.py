@@ -6,6 +6,7 @@ import requests
 import stat
 import platform
 import sys
+import winshell
 
 # === CONFIGURATION ===
 TARGET_DIR = os.path.expanduser("~/Documents/mc")
@@ -95,6 +96,31 @@ def main():
         inner_folder = get_inner_folder(extract_path)
         copy_and_replace(inner_folder, TARGET_DIR)
         create_run_scripts(TARGET_DIR)
+        ICON = os.path.join(TARGET_DIR, "logo.ico")
+        if platform.system() == "Windows":
+            winshell.shortcut(
+                os.path.join(TARGET_DIR, "run.bat"),
+                TARGET_DIR,
+                "Minecraft Launcher",
+                ICON,
+                "Minecraft Launcher"
+            )
+        elif platform.system() == "Linux":
+            # Create a .desktop file for Linux
+            desktop_file_path = os.path.join(os.path.expanduser("~/.local/share/applications"), "minecraft-launcher.desktop")
+            with open(desktop_file_path, "w") as f:
+                f.write(f"""[Desktop Entry]
+Name=Minecraft Launcher
+Exec={os.path.join(TARGET_DIR, "run.sh")}
+Type=Application
+Icon={ICON}
+Terminal=false
+StartupNotify=false
+""")
+            print(f"Desktop entry created at {desktop_file_path}")
+        else:
+            print("Unsupported OS for creating shortcuts. Please create a shortcut manually.")
+        print(f"Launcher installed to {TARGET_DIR}.")
 
 if __name__ == "__main__":
     main()
