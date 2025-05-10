@@ -5,10 +5,12 @@ import tempfile
 import requests
 import stat
 import platform
+import sys
 
 # === CONFIGURATION ===
-ZIP_URL = "https://github.com/StoppedwummPython/minecraft-launcher/archive/main.zip"
 TARGET_DIR = os.path.expanduser("~/Documents/mc")
+TAG = sys.argv[1] if len(sys.argv) > 1 else "1.1.0"
+ZIP_URL = "https://github.com/StoppedwummPython/minecraft-launcher/archive/refs/tags/" + TAG + ".zip"
 
 def download_zip(url, dest_path):
     print(f"Downloading from {url}...")
