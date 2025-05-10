@@ -30,7 +30,7 @@ jobs:
           pyinstaller --onefile installer.py
           move dist/installer.exe dist/installer-win.exe
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: installer-win.exe
           path: dist/installer-win.exe
@@ -59,7 +59,7 @@ jobs:
           pyinstaller --onefile installer.py
           mv dist/installer dist/installer-mac
       - name: Upload Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: installer-mac
           path: dist/installer-mac
@@ -89,12 +89,12 @@ jobs:
           pyinstaller --onefile installer.py
           mv dist/installer dist/installer-ubuntu
       - name: Download Windows Asset
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: installer-win.exe
           path: dist/
       - name: Download Mac Asset
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: installer-mac
           path: dist/
