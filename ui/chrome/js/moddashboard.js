@@ -10,6 +10,7 @@ document.getElementById("search").addEventListener("click", async function() {
     for (var i = 0; i < result.length; i++) {
         let project = result[i]
         let projectDiv = document.createElement("div")
+        console.log(new String(mod.metadata[0].id).replaceAll("-", ""))
         let modInstalled = mods.find(mod => new String(mod.metadata[0].id).replaceAll("-", "") == project.slug) ? true : false
         console.log(modInstalled)
         projectDiv.className = "project"
