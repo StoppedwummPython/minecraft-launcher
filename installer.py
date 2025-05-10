@@ -1,3 +1,4 @@
+global winshell
 import os
 import zipfile
 import shutil
@@ -6,7 +7,8 @@ import requests
 import stat
 import platform
 import sys
-import winshell
+if platform.system() == "Windows":
+    import winshell
 
 # === CONFIGURATION ===
 TARGET_DIR = os.path.expanduser("~/Documents/mc")
