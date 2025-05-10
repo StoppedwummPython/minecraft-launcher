@@ -165,7 +165,7 @@ app.whenReady().then(() => {
   // List raw mod files (existing)
   ipcMain.handle('getInstalledMods', () => {
     const modsFolder = path.join(__dirname, '.minecraft', 'mods');
-    if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder);
+    if (!fs.existsSync(path.join(__dirname, '.minecraft'))) if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder);
     return fs.readdirSync(modsFolder)
              .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
              .map(f => path.join(modsFolder, f));
@@ -174,7 +174,7 @@ app.whenReady().then(() => {
   // New: List mods with parsed metadata
   ipcMain.handle('getModsWithMetadata', () => {
     const modsFolder = path.join(__dirname, '.minecraft', 'mods');
-    if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder);
+    if (!fs.existsSync(path.join(__dirname, '.minecraft'))) if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder);
 
     return fs.readdirSync(modsFolder)
       .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
