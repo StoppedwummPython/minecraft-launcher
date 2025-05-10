@@ -17,6 +17,7 @@ document.getElementById("search").addEventListener("click", async function() {
             <p>${project.description}</p>
             <p>Downloads: ${project.downloads}</p>
             <p>Follows: ${project.follows}</p>
+            <p>Slug: ${project.slug}</p>
             <a href="https://modrinth.com/${project.project_type}/${project.slug}" target="_blank">View on Modrinth</a>
             <button class="install btn btn-primary" onclick="installMod('${project.slug}')" ${mods.find(mod => new String(mod.metadata[0].id).includes(project.slug)) ? "disabled=1" : ""} id="${project.slug}">${mods.find(mod => mod.metadata[0].id == project.slug) ? "Installed" : "Install"}</button>
         `
@@ -35,6 +36,7 @@ for (var i = 0; i < mods.length; i++) {
         <p>${mod.metadata[0].description}</p>
         <p>Version: ${mod.metadata[0].version}</p>
         <p>Path: ${mod.path}</p>
+        <p>ID: ${mod.metadata[0].id}</p>
         <button class="uninstall btn btn-primary" onclick="uninstallMod('${mod.path}')"} id="${mod.path}">Uninstall</button>
     `
     modsDiv.appendChild(modDiv)
