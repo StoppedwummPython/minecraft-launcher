@@ -173,8 +173,9 @@ app.whenReady().then(() => {
 
   // New: List mods with parsed metadata
   ipcMain.handle('getModsWithMetadata', () => {
-    const modsFolder = path.join(__dirname, '.minecraft', 'mods');
-    if (!fs.existsSync(path.join(__dirname, '.minecraft'))) if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder);
+    try {
+      const modsFolder = path.join(__dirname, '.minecraft', 'mods');
+    if (!fs.existsSync(path.join(__dirname, '.minecraft'))) if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder, { recursive: true });
 
     return fs.readdirSync(modsFolder)
       .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
@@ -183,6 +184,11 @@ app.whenReady().then(() => {
         const metadata = getModMetadata(fullPath);
         return { path: fullPath, metadata };
       });
+    } catch (error) {
+      console.error('Error reading mods folder:', error);
+      fs.mkdirSync(path.join(__dirname, '.minecraft', 'mods'), { recursive: true });
+      return [];
+    }
   });
 
   ipcMain.on('deleteFromModsFolder', (event, path) => {
