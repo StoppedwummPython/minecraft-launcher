@@ -1,19 +1,38 @@
 {
-    "image": "mcr.microsoft.com/devcontainers/universal:2",
-    "features": {
-      "ghcr.io/devcontainers/features/desktop-lite:1": {}
-    },
-    "forwardPorts": [6080],
-    "portsAttributes": {
-      "6080": {
-        "label": "desktop"
-      }
-    },
-    "customizations": {
-        "vscode": {
-            "extensions": [
-                "GitHub.copilot-chat"
-            ]
-        }
+  "name": "Codespace with Desktop Environment",
+  "image": "mcr.microsoft.com/devcontainers/universal:2",
+  "features": {
+    "ghcr.io/devcontainers/features/desktop-lite:1": {
+      "password": "vscode",
+      "webPort": "6080",
+      "vncPort": "5901"
     }
-  }
+  },
+  "forwardPorts": [
+    6080,
+    5901
+  ],
+  "portsAttributes": {
+    "6080": {
+      "label": "Desktop (noVNC)",
+      "onAutoForward": "openPreview"
+    },
+    "5901": {
+      "label": "VNC Server"
+    }
+  },
+  "postCreateCommand": "echo 'Desktop environment ready. Access via port 6080.'",
+  // Optional: Increase shared memory if applications crash. [3]
+  "runArgs": [
+    "--init",
+    "--shm-size=1g"
+  ]
+  // You can add other features, extensions, or configurations as needed.
+  // "customizations": {
+  //   "vscode": {
+  //     "extensions": [
+  //       "your.favorite-extension"
+  //     ]
+  //   }
+  // }
+}
