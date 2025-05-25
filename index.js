@@ -669,7 +669,7 @@ async function main() {
         // Run subprocess to setup neoforge
         console.log(`Setting up NeoForge...`);
         const setupNeoForgeScript = path.join(__dirname, 'neoinstaller.jar');
-        const setupNeoForgeCommand = `${jE} -jar "${setupNeoForgeScript}" --install-client .minecraft`;
+        const setupNeoForgeCommand = `"${jE}" -jar "${setupNeoForgeScript}" --install-client .minecraft`;
         const setupNeoForgeProcess = spawn(setupNeoForgeCommand, { shell: true });
         setupNeoForgeProcess.stdout.on('data', (data) => {
             console.log(data.toString());
