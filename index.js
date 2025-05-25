@@ -12,7 +12,7 @@ import cliProgress from 'cli-progress';
 import { downloadJava } from './java.js';
 import launcherConfig from "./launcher_config.json" with { type: 'json' };
 import { replaceText } from './replacer.js';
-let defaultVersion = 'neoforge-21.1.162.json'
+let defaultVersion = 'neoforge-21.1.172.json'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let patchedLauncherConfig = {};
