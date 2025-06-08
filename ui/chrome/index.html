@@ -1,24 +1,55 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>MC Launcher</title>
-    <link rel="stylesheet" href="css/main.css">
-</head>
-<body>
+    <link rel="stylesheet" href="css/main.css" />
+  </head>
+  <body>
     <header>
-        <h1>MC Launcher</h1>
+      <h1>MC Launcher</h1>
     </header>
     <main>
-        <button id="execute-button">Run Minecraft</button>
-        <a href="login/index.html">Login</a>
-        <a href="moddashboard/index.html">Mod Dashboard</a>
-        <a href="config/index.html">Config</a>
+      <button id="execute-button">Run Minecraft</button>
+      <a href="login/index.html">Login</a>
+      <a href="moddashboard/index.html">Mod Dashboard</a>
+      <a href="config/index.html">Config</a>
+      <a href="modpacks/index.html">Modpacks</a><br />
+      <select name="version" id="version">
+        
+      </select>
+      <button id="set-version-button">Set Version</button>
     </main>
     <script>
-        document.getElementById('execute-button').addEventListener('click', function() {
-            mcAPI.launch()
+      document
+        .getElementById("execute-button")
+        .addEventListener("click", function () {
+          mcAPI.launch();
         });
+      (async function () {
+        const versions = await window.mcAPI.getAllVersionFiles();
+        let launcherConfig = await window.mcAPI.getConfig("launcher");
+        console.log("Launcher Config:", launcherConfig);
+        const versionSelect = document.getElementById("version");
+        versions.forEach((version) => {
+          const option = document.createElement("option");
+          option.value = version;
+          option.textContent = version;
+          if (version === launcherConfig.version) {
+            option.selected="selected";
+          }
+          versionSelect.appendChild(option);
+        });
+      })();
+      document.getElementById("set-version-button").addEventListener("click", async function () {
+        const version = document.getElementById("version").value;
+        console.log(`Setting version to: ${version}`);
+        let launcherConfig = await window.mcAPI.getConfig("launcher");
+        launcherConfig.version = version;
+        await window.mcAPI.saveConfig("launcher", JSON.stringify(launcherConfig, null, 4));
+        location.reload();
+      });
     </script>
+  </body>
 </html>

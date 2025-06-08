@@ -167,23 +167,23 @@ app.whenReady().then(() => {
     const modsFolder = path.join(__dirname, '.minecraft', 'mods');
     if (!fs.existsSync(path.join(__dirname, '.minecraft'))) if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder);
     return fs.readdirSync(modsFolder)
-             .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
-             .map(f => path.join(modsFolder, f));
+      .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
+      .map(f => path.join(modsFolder, f));
   });
 
   // New: List mods with parsed metadata
   ipcMain.handle('getModsWithMetadata', () => {
     try {
       const modsFolder = path.join(__dirname, '.minecraft', 'mods');
-    if (!fs.existsSync(path.join(__dirname, '.minecraft'))) if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder, { recursive: true });
+      if (!fs.existsSync(path.join(__dirname, '.minecraft'))) if (!fs.existsSync(modsFolder)) fs.mkdirSync(modsFolder, { recursive: true });
 
-    return fs.readdirSync(modsFolder)
-      .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
-      .map(filename => {
-        const fullPath = path.join(modsFolder, filename);
-        const metadata = getModMetadata(fullPath);
-        return { path: fullPath, metadata };
-      });
+      return fs.readdirSync(modsFolder)
+        .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
+        .map(filename => {
+          const fullPath = path.join(modsFolder, filename);
+          const metadata = getModMetadata(fullPath);
+          return { path: fullPath, metadata };
+        });
     } catch (error) {
       console.error('Error reading mods folder:', error);
       fs.mkdirSync(path.join(__dirname, '.minecraft', 'mods'), { recursive: true });
@@ -212,6 +212,110 @@ app.whenReady().then(() => {
 
   // Open main window
   createWindow();
+});
+
+fs.mkdirSync(path.join(__dirname, '.minecraft', 'modpacks'), { recursive: true });
+
+if (!fs.existsSync(path.join(__dirname, '.minecraft', 'modpacks', 'modpacks.json'))) {
+  fs.writeFileSync(path.join(__dirname, '.minecraft', 'modpacks', 'modpacks.json'), JSON.stringify([]));
+}
+
+ipcMain.handle('getModpacks', async () => {
+  const modpacksPath = path.join(__dirname, '.minecraft', 'modpacks');
+  if (!fs.existsSync(modpacksPath)) {
+    fs.mkdirSync(modpacksPath, { recursive: true });
+  }
+  return JSON.parse(fs.readFileSync(path.join(modpacksPath, 'modpacks.json'), 'utf8') || '[]');
+});
+
+ipcMain.handle('createModpack', async (event, modpack) => {
+  const modpacksPath = path.join(__dirname, '.minecraft', 'modpacks');
+  if (!fs.existsSync(modpacksPath)) {
+    fs.mkdirSync(modpacksPath, { recursive: true });
+  }
+
+  const modpacksFile = path.join(modpacksPath, 'modpacks.json');
+  let modpacks = [];
+
+  if (fs.existsSync(modpacksFile)) {
+    modpacks = JSON.parse(fs.readFileSync(modpacksFile, 'utf8') || '[]');
+  }
+
+  modpacks.push(modpack);
+  fs.writeFileSync(modpacksFile, JSON.stringify(modpacks, null, 2));
+  fs.mkdirSync(path.join(modpacksPath, modpack), { recursive: true });
+  fs.readdirSync(path.join(__dirname, '.minecraft', 'mods')).forEach(file => {
+    if (file.startsWith('.')) return; // Skip hidden files
+    fs.copyFileSync(path.join(__dirname, '.minecraft', 'mods', file), path.join(modpacksPath, modpack, file));
+  });
+});
+
+ipcMain.handle('getModsFromModpack', async (event, modpack) => {
+  const modpacksPath = path.join(__dirname, '.minecraft', 'modpacks');
+  const modpackPath = path.join(modpacksPath, modpack);
+
+  if (!fs.existsSync(modpackPath)) {
+    throw new Error(`Modpack not found: ${modpack}`);
+  }
+
+  return fs.readdirSync(modpackPath)
+    .filter(f => f.endsWith('.jar') || f.endsWith('.zip'))
+});
+
+ipcMain.handle('updateModpack', async (event, modpack) => {
+  const modpacksPath = path.join(__dirname, '.minecraft', 'modpacks');
+  const modpackPath = path.join(modpacksPath, modpack);
+  if (!fs.existsSync(modpackPath)) {
+    throw new Error(`Modpack not found: ${modpack}`);
+  }
+  fs.rmSync(modpackPath, { recursive: true, force: true });
+  fs.mkdirSync(modpackPath, { recursive: true });
+  fs.readdirSync(path.join(__dirname, '.minecraft', 'mods')).forEach(file => {
+    if (file.startsWith('.')) return; // Skip hidden files
+    fs.copyFileSync(path.join(__dirname, '.minecraft', 'mods', file), path.join(modpackPath, file));
+  });
+});
+
+ipcMain.handle("deleteModpack", async (event, modpack) => {
+  const modpacksPath = path.join(__dirname, '.minecraft', 'modpacks');
+  const modpackPath = path.join(modpacksPath, modpack);
+  if (fs.existsSync(modpackPath)) {
+    fs.rmSync(modpackPath, { recursive: true });
+    // Update modpacks.json
+    const modpacksFile = path.join(modpacksPath, 'modpacks.json');
+    let modpacks = [];
+    if (fs.existsSync(modpacksFile)) {
+      modpacks = JSON.parse(fs.readFileSync(modpacksFile, 'utf8') || '[]');
+    } else {
+      throw new Error(`Modpacks file not found: ${modpacksFile}`);
+    }
+    modpacks = modpacks.filter(mp => mp !== modpack);
+    fs.writeFileSync(modpacksFile, JSON.stringify(modpacks, null, 2));
+  } else {
+    throw new Error(`Modpack not found: ${modpack}`);
+  }
+});
+
+ipcMain.handle("installModpack", async (event, modpack) => {
+  const modpacksPath = path.join(__dirname, '.minecraft', 'modpacks');
+  const modpackPath = path.join(modpacksPath, modpack);
+  if (!fs.existsSync(modpackPath)) {
+    throw new Error(`Modpack not found: ${modpack}`);
+  }
+  fs.rmSync(path.join(__dirname, '.minecraft', 'mods'), { recursive: true, force: true });
+  fs.mkdirSync(path.join(__dirname, '.minecraft', 'mods'), { recursive: true });
+  fs.readdirSync(modpackPath).forEach(file => {
+    if (file.startsWith('.')) return; // Skip hidden files
+    fs.copyFileSync(path.join(modpackPath, file), path.join(__dirname, '.minecraft', 'mods', file));
+  });
+});
+
+ipcMain.handle('getAllVersionFiles', async () => {
+  const versionsPath = path.join(__dirname)
+  const versionFiles = fs.readdirSync(versionsPath)
+    .filter(file => file.endsWith('.json'))
+    .filter(file => file.startsWith('1.') || file.startsWith("neoforge-"))
+  return versionFiles;
 });
 
 // Quit on all windows closed (optional, standard behavior)

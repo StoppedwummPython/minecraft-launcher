@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Launcher</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <header>
+        <a href="../index.html">Back</a>
+        <h1>Modpacks</h1>
+    </header>
+    <main>
+        <button id="create-modpack">Create Modpack</button>     
+        <ul id="modpacks">
+
+        </ul>
+    </main>
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const modpacks = await window.mcAPI.getModpacks();
+            document.getElementById('modpacks').innerHTML = modpacks.map(modpack => `
+                <li>
+                    <a href="modpack.html?name=${encodeURIComponent(modpack)}">${modpack}</a>
+                </li>
+            `).join('');
+        });
+        document.getElementById('create-modpack').addEventListener('click', async function() {
+            window.location.href = "createModpack.html"
+        });
+    </script>
+</html>

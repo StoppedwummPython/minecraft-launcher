@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Create Modpack</title>
+    <link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+    <header>
+        <h1>Create Modpack</h1>
+    </header>
+    <main>
+        <form id="create-modpack-form">
+            <label for="modpack-name">Modpack Name:</label>
+            <input type="text" id="modpack-name" name="modpack-name" required>
+            <input type="submit" value="Create Modpack">
+        </form>
+    </main>
+    <script>
+        document.getElementById('create-modpack-form').addEventListener('submit', async function(event) {
+            event.preventDefault();
+            const modpackName = document.getElementById('modpack-name').value;
+            try {
+                console.log(window.mcAPI)
+                await window.mcAPI.createModpack(modpackName);
+                alert('Modpack created successfully!');
+                window.location.href = "index.html"; // Redirect to modpacks list
+            } catch (error) {
+                console.error('Error creating modpack:', error);
+                alert('Failed to create modpack. Please try again.');
+            }
+        });
+    </script>
+</html>

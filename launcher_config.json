@@ -1,4 +1,5 @@
 {
     "basepath": ":thisdir:",
-    "path": ".minecraft"
+    "path": ".minecraft",
+    "version": "neoforge-21.1.176.json"
 }

@@ -1,4 +1,4 @@
-const {ipcRenderer,contextBridge} = require('electron');
+const { ipcRenderer, contextBridge } = require('electron');
 
 contextBridge.exposeInMainWorld('mcAPI', {
     launch: () => {
@@ -25,5 +25,26 @@ contextBridge.exposeInMainWorld('mcAPI', {
 
     saveConfig: async (clientOrLauncher, config) => {
         return await ipcRenderer.invoke('saveConfig', clientOrLauncher, config);
+    },
+    getModpacks: async () => {
+        return await ipcRenderer.invoke('getModpacks');
+    },
+    createModpack: async (modpack) => {
+        return await ipcRenderer.invoke('createModpack', modpack);
+    },
+    getModsFromModpack: async (modpack) => {
+        return await ipcRenderer.invoke('getModsFromModpack', modpack);
+    },
+    updateModpack: async (modpack) => {
+        return await ipcRenderer.invoke('updateModpack', modpack);
+    },
+    installModpack: async (modpack) => {
+        return await ipcRenderer.invoke('installModpack', modpack);
+    },
+    deleteModpack: async (modpack) => {
+        return await ipcRenderer.invoke('deleteModpack', modpack);
+    },
+    getAllVersionFiles: async () => {
+        return await ipcRenderer.invoke('getAllVersionFiles');
     }
 })
