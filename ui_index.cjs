@@ -4,6 +4,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const { spawn } = require('child_process');
+const java = require("./java.js")
 
 // New dependencies for reading mod metadata
 const AdmZip = require('adm-zip');
@@ -316,6 +317,46 @@ ipcMain.handle('getAllVersionFiles', async () => {
     .filter(file => file.endsWith('.json'))
     .filter(file => file.startsWith('1.') || file.startsWith("neoforge-"))
   return versionFiles;
+});
+
+ipcMain.handle("executeNeoforgeInstaller", (event, downloadURL, version) => {
+  return new Promise(async (resolve, reject) => {
+    const jv = await java.downloadJava({
+      version: "21",
+      imageType: "jdk",
+      destinationDir: path.join(__dirname, 'java-runtime')
+    })
+
+    console.log(downloadURL, jv, version);
+    const installerPath = path.join(__dirname, 'neoinstaller.jar');
+    const installer = await fetch(downloadURL)
+    if (!installer.ok) {
+      throw new Error(`Failed to download installer: ${installer.statusText}`);
+    }
+    // Write the installer to a file
+    const installerBuffer = await installer.arrayBuffer();
+    fs.writeFileSync(installerPath, Buffer.from(installerBuffer));
+    // Spawn the Java process to run the installer
+    const proc = spawn(`"${jv}" -jar "${installerPath}" --install-client .minecraft`, {
+      shell: true
+    });
+    proc.stdout.on('data', data => {
+      console.log(`stdout: ${data}`);
+    });
+    proc.stderr.on('data', data => {
+      console.error(`stderr: ${data}`);
+    });
+    proc.on('close', code => {
+      console.log(`child process exited with code ${code}`);
+      if (code === 0) {
+        console.log('NeoForge installation completed successfully.');
+        fs.copyFileSync(path.join(__dirname, '.minecraft', 'versions', `neoforge-${version}`, `neoforge-${version}.json`), path.join(__dirname, `neoforge-${version}.json`));
+        resolve(code);
+      } else {
+        reject(new Error(`NeoForge installation failed with code ${code}`));
+      }
+    });
+  });
 });
 
 // Quit on all windows closed (optional, standard behavior)

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeoForge Puller</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container">
+        <h1>NeoForge Puller</h1>
+        <p>This tool is used to pull the latest NeoForge updates.</p>
+        <select id="versionSelector" class="form-select mb-3">
+            <option selected="true" value="">Select a NeoForge version</option>
+        </select>
+        <button id="pullButton" class="btn btn-primary mb-3">Pull selected NeoForge</button>
+        <div id="status" class="mt-3"></div>
+    </div>
+
+    <script type="module">
+        import parseXML from "../js/parseXML.js";
+        import replaceText from "../js/replacer.js";
+        document.addEventListener("DOMContentLoaded", async function () {
+            const mvn = await fetch("https://maven.neoforged.net/api/maven/versions/releases/net/neoforged/neoforge")
+                .then(response => response.json())
+                .catch(error => {
+                    console.error("Error fetching NeoForge versions:", error);
+                    document.getElementById("status").innerText = "Failed to fetch NeoForge versions.";
+                });
+            const downloadBase = "https://maven.neoforged.net/releases/net/neoforged/neoforge/${{version}}/neoforge-${{version}}-installer.jar";
+            console.log("NeoForge versions:", mvn);
+            let groupedEntries = {};
+            for (const entry of mvn.versions) {
+                
+                const version = /** @type {String} */ entry
+                if (!version.startsWith("0.")) {
+                    const selection = document.getElementById("versionSelector");
+
+                    const option = document.createElement("option");
+                    option.value = version;
+                    option.textContent = version;
+                    selection.appendChild(option);
+                }
+            }
+            document.getElementById("pullButton").addEventListener("click", async function () {
+                const selectedVersion = document.getElementById("versionSelector").value;
+                if (!selectedVersion) {
+                    alert("Please select a NeoForge version to pull.");
+                    return;
+                }
+                try {
+                    document.getElementById("status").innerText = "Pulling NeoForge version: " + selectedVersion;
+                    // construct download URL
+                    const downloadURL = replaceText(downloadBase, { version: selectedVersion });
+                    await window.mcAPI.executeNeoforgeInstaller(downloadURL, selectedVersion)
+                    document.getElementById("status").innerText = "Successfully pulled NeoForge version: " + selectedVersion;
+                } catch (error) {
+                    console.error("Error pulling NeoForge:", error);
+                    document.getElementById("status").innerText = "Failed to pull NeoForge version: " + selectedVersion;
+                }
+            });
+        })
+    </script>
+</body>
+</html>

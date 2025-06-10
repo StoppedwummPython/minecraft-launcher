@@ -46,5 +46,8 @@ contextBridge.exposeInMainWorld('mcAPI', {
     },
     getAllVersionFiles: async () => {
         return await ipcRenderer.invoke('getAllVersionFiles');
+    },
+    executeNeoforgeInstaller: async (url, version) => {
+        return await ipcRenderer.invoke('executeNeoforgeInstaller', url, version);
     }
 })
