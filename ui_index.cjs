@@ -346,11 +346,34 @@ ipcMain.handle("executeNeoforgeInstaller", (event, downloadURL, version) => {
     proc.stderr.on('data', data => {
       console.error(`stderr: ${data}`);
     });
-    proc.on('close', code => {
+    proc.on('close', async code => {
       console.log(`child process exited with code ${code}`);
       if (code === 0) {
         console.log('NeoForge installation completed successfully.');
         fs.copyFileSync(path.join(__dirname, '.minecraft', 'versions', `neoforge-${version}`, `neoforge-${version}.json`), path.join(__dirname, `neoforge-${version}.json`));
+        const manifest = require(path.join(__dirname, `neoforge-${version}.json`));
+        // check if inheritsFrom exists in the directory
+        if (manifest.inheritsFrom) {
+          const inheritsPath = path.join(__dirname, `${manifest.inheritsFrom}.json`);
+          if (!fs.existsSync(inheritsPath)) {
+            const url = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+            const response = await fetch(url);
+            if (!response.ok) {
+              throw new Error(`Failed to fetch version manifest: ${response.statusText}`);
+            }
+            const manifestData = await response.json();
+            const versionData = manifestData.versions.find(v => v.id === manifest.inheritsFrom);
+            if (!versionData) {
+              throw new Error(`Version ${manifest.inheritsFrom} not found in manifest.`);
+            }
+            const versionJson = await fetch(versionData.url);
+            if (!versionJson.ok) {
+              throw new Error(`Failed to fetch version JSON: ${versionJson.statusText}`);
+            }
+            // write the version JSON to the file
+            fs.writeFileSync(inheritsPath, await versionJson.text());
+          }
+        }
         resolve(code);
       } else {
         reject(new Error(`NeoForge installation failed with code ${code}`));
