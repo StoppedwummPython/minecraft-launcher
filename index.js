@@ -12,6 +12,7 @@ import cliProgress from 'cli-progress';
 import { downloadJava } from './java.js';
 import launcherConfig from "./launcher_config.json" with { type: 'json' };
 import { replaceText } from './replacer.js';
+import { ArgumentParser } from "argparse";
 let defaultVersion = 'neoforge-21.1.172.json'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -690,7 +691,9 @@ async function main() {
         await fs.writeFile(CLIENT_STORAGE_PATH, JSON.stringify(CLIENT_STORAGE, null, 2));
     }
 
-    if (
+    if (process.argv.includes("--skip-run")) {
+        return;
+    }
     // 10. Construct Launch Command (using merged arguments and target mainClass)
     console.log('\nConstructing launch command...');
     const classpath = classpathEntries.join(path.delimiter);
@@ -826,7 +829,7 @@ async function main() {
 } // End of main function
 // --ui adds fix to the launcher (when the ui launches, it returns ui_index.cjs as the entry point script, which will trigger module logic, which is now fixed)
 const entryPointScript = process.argv[1].split(path.sep).pop();
-if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop() || (process.argv.length == 3 && process.argv[2] == "--ui")) {
+if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop() || (process.argv.includes("--ui"))) {
     main().catch(error => {
         console.error("\n--- An error occurred during setup or launch ---");
         console.error(error);
