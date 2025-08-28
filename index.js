@@ -689,6 +689,8 @@ async function main() {
         CLIENT_STORAGE.setupNeoForge.push(versionId);
         await fs.writeFile(CLIENT_STORAGE_PATH, JSON.stringify(CLIENT_STORAGE, null, 2));
     }
+
+    if (
     // 10. Construct Launch Command (using merged arguments and target mainClass)
     console.log('\nConstructing launch command...');
     const classpath = classpathEntries.join(path.delimiter);
