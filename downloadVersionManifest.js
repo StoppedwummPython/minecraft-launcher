@@ -1,37 +1,63 @@
-import { createInterface } from "readline";
-import fs from "fs/promises"
-const manifest = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json"
+import fs from "fs/promises";
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const manifests = await fetch(manifest)
-if (!manifests.ok) throw new Error("Failed to fetch version manifest")
-const json = await manifests.json()
+// Define __filename and __dirname for ES Modules
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-function getInput(prompt) {
-    const rl = createInterface({
-        input: process.stdin,
-        output: process.stdout
-    });
-    return new Promise(resolve => {
-        rl.question(prompt, answer => {
-            rl.close();
-            resolve(answer);
-        });
+const MANIFEST_URL = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
+
+/**
+ * Main function to download the manifest for a specific version.
+ * This is what your preload script calls.
+ */
+async function download(choice) {
+    // 1. Fetch the global manifest
+    const manifestResponse = await fetch(MANIFEST_URL);
+    if (!manifestResponse.ok) throw new Error("Failed to fetch global version manifest");
+    const json = await manifestResponse.json();
+
+    let version = null;
+
+    // 2. Logic to find the version
+    if (choice === "0" || choice === "latest") {
+        version = json.versions.find(v => v.id === json.latest.release);
+    } else {
+        version = json.versions.find(v => v.id === choice);
+    }
+
+    if (!version) {
+        throw new Error(`Version ${choice} not found in manifest.`);
+    }
+
+    // 3. Download the specific version's manifest
+    const response = await fetch(version.url);
+    if (!response.ok) throw new Error(`Failed to fetch manifest for version ${version.id}`);
+    
+    const versionData = await response.json();
+
+    // 4. Save to disk 
+    // Note: We use path.join to ensure it saves in the project folder
+    const filePath = path.join(process.cwd(), `${version.id}.json`);
+    await fs.writeFile(filePath, JSON.stringify(versionData, null, 2));
+    
+    console.log(`Saved manifest to: ${filePath}`);
+    return filePath;
+}
+
+/**
+ * CLI Support: Only runs if the file is executed directly (node downloadVersionManifest.js)
+ */
+const isMainModule = import.meta.url === `file://${process.argv[1]}` || process.argv[1] === __filename;
+
+if (isMainModule) {
+    // If running via CLI, use the argument passed or default to "0"
+    const cliChoice = process.argv[2] || "0";
+    download(cliChoice).catch(err => {
+        console.error("CLI Error:", err);
+        process.exit(1);
     });
 }
 
-const choice = await getInput("Select a version (0 for latest): ")
-
-let version = null
-
-if (choice.trim() == "0") {
-    version = json.versions.find(version => version.id == json.latest.release)
-} else {
-    version = json.versions.find(version => version.id == choice)
-}
-
-// download version manifest
-const url = version.url
-const response = await fetch(url)
-if (!response.ok) throw new Error("Failed to fetch version manifest")
-// save it to disk
-await fs.writeFile(version.id + ".json", await response.text())
+export default download;

@@ -382,6 +382,11 @@ ipcMain.handle("executeNeoforgeInstaller", (event, downloadURL, version) => {
   });
 });
 
+ipcMain.handle("downloadVersionManifest", async (event, version) => {
+  const downloadVersionManifest = (await import("./downloadVersionManifest.js")).default
+  await downloadVersionManifest(version)
+})
+
 // Quit on all windows closed (optional, standard behavior)
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

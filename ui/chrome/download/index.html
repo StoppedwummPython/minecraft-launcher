@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minecraft Version Manifest Downloader</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Minecraft Version Manifest</h1>
+        <p>Select a version to download its specific manifest file.</p>
+        
+        <select id="versionSelector" class="form-select mb-3">
+            <option selected="true" value="">Loading versions...</option>
+        </select>
+        
+        <button id="downloadBtn" class="btn btn-success mb-3">Download Version Manifest</button>
+        
+        <div id="status" class="mt-3"></div>
+    </div>
+
+    <script type="module">
+        document.addEventListener("DOMContentLoaded", async function () {
+            const selector = document.getElementById("versionSelector");
+            const status = document.getElementById("status");
+            const downloadBtn = document.getElementById("downloadBtn");
+
+            // 1. Fetch the global manifest from Mojang
+            try {
+                const response = await fetch("https://piston-meta.mojang.com/mc/game/version_manifest_v2.json");
+                const data = await response.json();
+                
+                // Clear loading message
+                selector.innerHTML = '<option selected="true" value="">Select a version</option>';
+
+                // 2. Populate the dropdown
+                data.versions.forEach(version => {
+                    const option = document.createElement("option");
+                    option.value = version.id;
+                    option.textContent = `${version.id} (${version.type})`;
+                    selector.appendChild(option);
+                });
+            } catch (error) {
+                console.error("Error fetching manifest:", error);
+                status.innerText = "Failed to load version list.";
+            }
+
+            // 3. Handle the download button click
+            downloadBtn.addEventListener("click", async function () {
+                const selectedVersion = selector.value;
+                
+                if (!selectedVersion) {
+                    alert("Please select a version first.");
+                    return;
+                }
+
+                try {
+                    status.innerText = `Downloading manifest for ${selectedVersion}...`;
+                    status.className = "mt-3 text-primary";
+                    
+                    // Invoke the function defined in your preload
+                    await window.mcAPI.downloadVersionManifest(selectedVersion);
+                    
+                    status.innerText = `Successfully downloaded manifest for ${selectedVersion}`;
+                    status.className = "mt-3 text-success";
+                } catch (error) {
+                    console.error("Download error:", error);
+                    status.innerText = `Error: ${error.message || "Failed to download manifest"}`;
+                    status.className = "mt-3 text-danger";
+                }
+            });
+        });
+    </script>
+</body>
+</html>
