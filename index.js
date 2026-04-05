@@ -13,6 +13,7 @@ import { downloadJava } from './java.js';
 import launcherConfig from "./launcher_config.json" with { type: 'json' };
 import { replaceText } from './replacer.js';
 import { ArgumentParser } from "argparse";
+import pLimit from 'p-limit'; // Use require('p-limit') for CommonJS
 let defaultVersion = 'neoforge-21.1.172.json'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -592,7 +593,7 @@ async function main() {
     }
     console.log('Native extraction complete.');
 
-    // 9. Download Assets (using merged asset index info)
+    // 9. Download Assets
     console.log('\nChecking assets...');
     if (!finalManifest.assetIndex) {
         throw new Error(`Merged manifest for ${versionId} is missing asset index information.`);
@@ -603,28 +604,39 @@ async function main() {
     await downloadFile(assetIndexInfo.url, assetIndexPath, assetIndexInfo.sha1);
 
     const assetIndexContent = JSON.parse(await fs.readFile(assetIndexPath, 'utf-8'));
-    // ... (rest of asset download logic remains the same) ...
     const assetObjects = assetIndexContent.objects;
-    const totalAssets = Object.keys(assetObjects).length;
-    const assetProgressBar = new cliProgress.SingleBar({/* ... format ... */}, cliProgress.Presets.shades_classic);
+    
+    // --- FIX START ---
+    const assetKeys = Object.keys(assetObjects); // Define the missing variable
+    const totalAssets = assetKeys.length;
+    const assetLimit = pLimit(20); // Concurrent limit
+    // --- FIX END ---
+
+    const assetProgressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
     console.log(`Checking ${totalAssets} asset files...`);
     assetProgressBar.start(totalAssets, 0, { filehash: "Starting..." });
-    for (const assetKey in assetObjects) {
-        const asset = assetObjects[assetKey];
-        const hash = asset.hash;
-        const subDir = hash.substring(0, 2);
-        const assetSubDir = path.join(ASSET_OBJECTS_DIR, subDir);
-        const assetFilePath = path.join(assetSubDir, hash);
-        const assetUrl = `https://resources.download.minecraft.net/${subDir}/${hash}`;
-        try {
-            await downloadFile(assetUrl, assetFilePath, hash);
-        } catch (error) {
-            assetProgressBar.stop();
-            console.error(`\nFailed to download asset: ${hash}`);
-            throw error;
-        }
-        assetProgressBar.increment(1, { filehash: hash });
-    }
+
+    const assetPromises = assetKeys.map((assetKey) => {
+        return assetLimit(async () => {
+            const asset = assetObjects[assetKey];
+            const hash = asset.hash;
+            const subDir = hash.substring(0, 2);
+            const assetSubDir = path.join(ASSET_OBJECTS_DIR, subDir);
+            const assetFilePath = path.join(assetSubDir, hash);
+            const assetUrl = `https://resources.download.minecraft.net/${subDir}/${hash}`;
+
+            try {
+                await downloadFile(assetUrl, assetFilePath, hash);
+                assetProgressBar.increment(1, { filehash: hash });
+            } catch (error) {
+                assetProgressBar.stop();
+                console.error(`\nFailed to download asset: ${hash}`);
+                throw error;
+            }
+        });
+    });
+
+    await Promise.all(assetPromises);
     assetProgressBar.stop();
     console.log(`Asset check complete.`);
     const jE = await downloadJava({

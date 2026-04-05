@@ -315,7 +315,7 @@ ipcMain.handle('getAllVersionFiles', async () => {
   const versionsPath = path.join(__dirname)
   const versionFiles = fs.readdirSync(versionsPath)
     .filter(file => file.endsWith('.json'))
-    .filter(file => file.startsWith('1.') || file.startsWith("neoforge-"))
+    .filter(file => /^\d/.test(file) || file.startsWith("neoforge-"))
   return versionFiles;
 });
 
