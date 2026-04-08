@@ -12,7 +12,9 @@ import cliProgress from 'cli-progress';
 import { downloadJava } from './java.js';
 import launcherConfig from "./launcher_config.json" with { type: 'json' };
 import { replaceText } from './replacer.js';
-let defaultVersion = 'neoforge-21.1.162.json'
+import { ArgumentParser } from "argparse";
+import pLimit from 'p-limit'; // Use require('p-limit') for CommonJS
+let defaultVersion = 'neoforge-21.1.172.json'
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 let patchedLauncherConfig = {};
@@ -591,7 +593,7 @@ async function main() {
     }
     console.log('Native extraction complete.');
 
-    // 9. Download Assets (using merged asset index info)
+    // 9. Download Assets
     console.log('\nChecking assets...');
     if (!finalManifest.assetIndex) {
         throw new Error(`Merged manifest for ${versionId} is missing asset index information.`);
@@ -602,28 +604,39 @@ async function main() {
     await downloadFile(assetIndexInfo.url, assetIndexPath, assetIndexInfo.sha1);
 
     const assetIndexContent = JSON.parse(await fs.readFile(assetIndexPath, 'utf-8'));
-    // ... (rest of asset download logic remains the same) ...
     const assetObjects = assetIndexContent.objects;
-    const totalAssets = Object.keys(assetObjects).length;
-    const assetProgressBar = new cliProgress.SingleBar({/* ... format ... */}, cliProgress.Presets.shades_classic);
+    
+    // --- FIX START ---
+    const assetKeys = Object.keys(assetObjects); // Define the missing variable
+    const totalAssets = assetKeys.length;
+    const assetLimit = pLimit(20); // Concurrent limit
+    // --- FIX END ---
+
+    const assetProgressBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
     console.log(`Checking ${totalAssets} asset files...`);
     assetProgressBar.start(totalAssets, 0, { filehash: "Starting..." });
-    for (const assetKey in assetObjects) {
-        const asset = assetObjects[assetKey];
-        const hash = asset.hash;
-        const subDir = hash.substring(0, 2);
-        const assetSubDir = path.join(ASSET_OBJECTS_DIR, subDir);
-        const assetFilePath = path.join(assetSubDir, hash);
-        const assetUrl = `https://resources.download.minecraft.net/${subDir}/${hash}`;
-        try {
-            await downloadFile(assetUrl, assetFilePath, hash);
-        } catch (error) {
-            assetProgressBar.stop();
-            console.error(`\nFailed to download asset: ${hash}`);
-            throw error;
-        }
-        assetProgressBar.increment(1, { filehash: hash });
-    }
+
+    const assetPromises = assetKeys.map((assetKey) => {
+        return assetLimit(async () => {
+            const asset = assetObjects[assetKey];
+            const hash = asset.hash;
+            const subDir = hash.substring(0, 2);
+            const assetSubDir = path.join(ASSET_OBJECTS_DIR, subDir);
+            const assetFilePath = path.join(assetSubDir, hash);
+            const assetUrl = `https://resources.download.minecraft.net/${subDir}/${hash}`;
+
+            try {
+                await downloadFile(assetUrl, assetFilePath, hash);
+                assetProgressBar.increment(1, { filehash: hash });
+            } catch (error) {
+                assetProgressBar.stop();
+                console.error(`\nFailed to download asset: ${hash}`);
+                throw error;
+            }
+        });
+    });
+
+    await Promise.all(assetPromises);
     assetProgressBar.stop();
     console.log(`Asset check complete.`);
     const jE = await downloadJava({
@@ -669,7 +682,7 @@ async function main() {
         // Run subprocess to setup neoforge
         console.log(`Setting up NeoForge...`);
         const setupNeoForgeScript = path.join(__dirname, 'neoinstaller.jar');
-        const setupNeoForgeCommand = `${jE} -jar ${setupNeoForgeScript} --install-client .minecraft`;
+        const setupNeoForgeCommand = `"${jE}" -jar "${setupNeoForgeScript}" --install-client .minecraft`;
         const setupNeoForgeProcess = spawn(setupNeoForgeCommand, { shell: true });
         setupNeoForgeProcess.stdout.on('data', (data) => {
             console.log(data.toString());
@@ -688,6 +701,10 @@ async function main() {
         });
         CLIENT_STORAGE.setupNeoForge.push(versionId);
         await fs.writeFile(CLIENT_STORAGE_PATH, JSON.stringify(CLIENT_STORAGE, null, 2));
+    }
+
+    if (process.argv.includes("--skip-run")) {
+        return;
     }
     // 10. Construct Launch Command (using merged arguments and target mainClass)
     console.log('\nConstructing launch command...');
@@ -824,7 +841,7 @@ async function main() {
 } // End of main function
 // --ui adds fix to the launcher (when the ui launches, it returns ui_index.cjs as the entry point script, which will trigger module logic, which is now fixed)
 const entryPointScript = process.argv[1].split(path.sep).pop();
-if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop() || (process.argv.length == 3 && process.argv[2] == "--ui")) {
+if (entryPointScript === __filename || entryPointScript === __dirname.split(path.sep).pop() || (process.argv.includes("--ui"))) {
     main().catch(error => {
         console.error("\n--- An error occurred during setup or launch ---");
         console.error(error);

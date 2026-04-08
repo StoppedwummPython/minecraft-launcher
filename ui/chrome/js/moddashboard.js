@@ -1,3 +1,4 @@
+const mods = await window.mcAPI.getModFiles()
 document.getElementById("search").addEventListener("click", async function() {
     let search = document.getElementById("searchText").value;
     let searchUrl = "https://mc-backend-six.vercel.app/api/search?q=" + encodeURIComponent(search)
@@ -9,6 +10,8 @@ document.getElementById("search").addEventListener("click", async function() {
     for (var i = 0; i < result.length; i++) {
         let project = result[i]
         let projectDiv = document.createElement("div")
+        let modInstalled = mods.find(mod => new String(mod.metadata[0].id) == new String(project.slug).replaceAll("-", "")) ? true : false
+        console.log(modInstalled)
         projectDiv.className = "project"
         projectDiv.innerHTML = `
             <img src="${project.icon_url}" alt="${project.title}">
@@ -16,9 +19,27 @@ document.getElementById("search").addEventListener("click", async function() {
             <p>${project.description}</p>
             <p>Downloads: ${project.downloads}</p>
             <p>Follows: ${project.follows}</p>
+            <p>Slug: ${project.slug}</p>
             <a href="https://modrinth.com/${project.project_type}/${project.slug}" target="_blank">View on Modrinth</a>
-            <button class="install" onclick="installMod('${project.slug}')">Install</button>
+            <button class="install btn btn-primary" onclick="installMod('${project.slug}')" ${modInstalled ? "disabled=1" : ""} id="${project.slug}">${modInstalled ? "Installed" : "Install"}</button>
         `
         resultDiv.appendChild(projectDiv)
     }
 });
+
+const modsDiv = document.getElementById("installedMods")
+for (var i = 0; i < mods.length; i++) {
+    let mod = mods[i]
+    console.log(mod)
+    let modDiv = document.createElement("div")
+    modDiv.className = "mod"
+    modDiv.innerHTML = `
+        <h3>${mod.metadata[0].name}</h3>
+        <p>${mod.metadata[0].description}</p>
+        <p>Version: ${mod.metadata[0].version}</p>
+        <p>Path: ${mod.path}</p>
+        <p>ID: ${mod.metadata[0].id}</p>
+        <button class="uninstall btn btn-primary" onclick="uninstallMod('${mod.path}')"} id="${mod.path}">Uninstall</button>
+    `
+    modsDiv.appendChild(modDiv)
+}

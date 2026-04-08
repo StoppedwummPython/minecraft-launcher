@@ -1,20 +1,30 @@
 {
   "name": "minecraft",
   "version": "1.0.0",
-  "description": "",
+  "description": "My Minecraft Mod Launcher/Manager",
   "license": "ISC",
   "author": "",
   "type": "module",
-  "main": "index.js",
+  "main": "ui_index.cjs",
   "scripts": {
-    "start": "electron ui_index.cjs",
-    "test": "node ."
+    "start": "electron .",
+    "test": "node index.js --ui",
+    "build": "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux",
+    "download": "node index.js --ui --skip-run"
   },
   "dependencies": {
+    "@iarna/toml": "^2.2.5",
     "adm-zip": "^0.5.16",
+    "argparse": "^2.0.1",
     "axios": "^1.9.0",
+    "bootstrap": "^5.3.6",
     "cli-progress": "^3.12.0",
+    "express": "^5.1.0",
     "node-fetch": "^3.3.2",
+    "p-limit": "^7.3.0",
     "tar": "^7.4.3",
     "uuid": "^11.1.0"
   },
@@ -27,5 +37,49 @@
   },
   "bin": {
     "minecraft": "electron ui_index.cjs"
+  },
+  "build": {
+    "appId": "com.stoppedwumm.minecraftlauncher",
+    "productName": "Minecraft Launcher",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "**/*",
+      "!dist",
+      "!build",
+      "!{.gitignore,.gitattributes,.editorconfig,.eslintrc.js,README.md,CHANGELOG.md,yarn.lock,pnpm-lock.yaml}",
+      "!tsconfig.json",
+      "!.vscode/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable",
+        "zip"
+      ]
+    },
+    "mac": {
+      "category": "public.app-category.games",
+      "target": [
+        "dmg",
+        "pkg"
+      ]
+    },
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb",
+        "rpm"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "uninstallDisplayName": "${productName} Uninstaller"
+    }
   }
 }

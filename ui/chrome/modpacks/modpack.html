@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Launcher</title>
+    <link rel="stylesheet" href="../css/main.css">
+    <link rel="stylesheet" href="../../../node_modules/bootstrap/dist/css/bootstrap.min.css">
+</head>
+<body>
+    <header>
+        <h1>Modpacks</h1>
+    </header>
+    <main>
+        <a href="index.html">Back</a>
+        <button id="update-modpack">Update Modpack</button>
+        <button id="delete-modpack">Delete Modpack</button>
+        <button id="install-modpack">Install Modpack</button>
+        (This will overwrite any currently installed mods)
+        <div>
+            <h2>Mods installed</h2>
+            <ul id="installed-mods">
+                <!-- Installed mods will be populated here -->
+            </ul>
+        </div>
+    </main>
+    <script>
+        document.addEventListener("DOMContentLoaded", async function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const modpackName = urlParams.get('name');
+            const modpackMods = await window.mcAPI.getModsFromModpack(modpackName);
+            document.title = `Modpack: ${modpackName}`;
+            document.getElementById('update-modpack').addEventListener('click', async function() {
+                try {
+                    await window.mcAPI.updateModpack(modpackName);
+                    alert('Modpack updated successfully!');
+                    window.location.reload(); // Reload the page to reflect changes´
+                } catch (error) {
+                    console.error('Error updating modpack:', error);
+                    alert('Failed to update modpack. Please try again.');
+                }
+            });
+            document.getElementById('delete-modpack').addEventListener('click', async function() {
+                try {
+                    await window.mcAPI.deleteModpack(modpackName);
+                    alert('Modpack deleted successfully!');
+                    window.location.href = "index.html"; // Redirect to modpacks list
+                } catch (error) {
+                    console.error('Error deleting modpack:', error);
+                    alert('Failed to delete modpack. Please try again.');
+                }
+            });
+            document.getElementById('install-modpack').addEventListener('click', async function() {
+                try {
+                    await window.mcAPI.installModpack(modpackName);
+                    alert('Modpack installed successfully!');
+                    window.location.reload(); // Reload the page to reflect changes
+                } catch (error) {
+                    console.error('Error installing modpack:', error);
+                    alert('Failed to install modpack. Please try again.');
+                }
+            })
+            const installedModsList = document.getElementById('installed-mods');
+            modpackMods.forEach(mod => {
+                const listItem = document.createElement('li');
+                listItem.textContent = mod;
+                installedModsList.appendChild(listItem);
+            });
+        })
+    </script>
+</html>
