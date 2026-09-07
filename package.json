@@ -17,7 +17,7 @@
   },
   "dependencies": {
     "@iarna/toml": "^2.2.5",
-    "adm-zip": "^0.5.16",
+    "adm-zip": "^0.6.0",
     "argparse": "^2.0.1",
     "axios": "^1.15.2",
     "bootstrap": "^5.3.6",
